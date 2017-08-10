@@ -1,0 +1,5 @@
+[clustering_prot v0.0.7]
+
+This folder and its content were created using the following command:
+
+python clustering_prot.py -f ../../processed_trajectories/md_prod12x12_noW_justphosphates+prot_firstframe_pbccenter.gro -x ../../processed_trajectories/md_prod12x12_noW_justphosphates+prot.pbcmol.xtc -o PIP2subPE --species Kir_info --res_used Kir_COG_info --nx_cutoff 82 --leaflets no -t 1 --graph_order all
