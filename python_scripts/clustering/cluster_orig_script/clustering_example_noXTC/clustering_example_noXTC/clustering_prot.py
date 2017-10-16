@@ -332,9 +332,7 @@ parser.add_argument('-h','--help', action='help', help=argparse.SUPPRESS)
 
 #parse user inputs
 #-----------------
-
 args = parser.parse_args()
-
 #data options
 args.grofilename = args.grofilename[0]
 args.xtcfilename = args.xtcfilename[0]
@@ -342,18 +340,13 @@ args.output_folder = args.output_folder[0]
 args.t_start=args.t_start[0]
 args.t_end=args.t_end[0]
 args.frames_dt=args.frames_dt[0]
-
 if args.frames_write_dt != "no":
 	args.frames_write_dt = int(args.frames_write_dt)
-
 #lipids identification
-
 args.beadsfilename = args.beadsfilename[0]
 args.cutoff_leaflet = args.cutoff_leaflet[0]
 args.selection_file_ff = args.selection_file_ff[0]
-
 #protein clusters identification
-
 args.species_file = args.species_file[0]
 args.cluster_groups_file = args.cluster_groups_file[0]
 args.res_contact = args.res_contact[0]
@@ -362,16 +355,13 @@ args.nx_cutoff = args.nx_cutoff[0]
 args.res_used = args.res_used[0]
 args.dbscan_dist = args.dbscan_dist[0]
 args.dbscan_nb = args.dbscan_nb[0]
-
 #other options
-
 args.order = args.order[0]
 args.max_clust = args.max_clust[0]
 args.buffer_size = args.buffer_size[0]
 
 #process options
 #---------------
-
 global vmd_counter
 global vmd_cluster_size
 global vmd_cluster_group
@@ -394,9 +384,8 @@ res_used = {}
 colour_group_other = "#E6E6E6"											#very light grey
 colour_leaflet_lower = "#808080"										#dark grey
 colour_leaflet_upper = "#C0C0C0"										#light grey
-
+	
 #leaflet identification
-
 if args.cutoff_leaflet != "large" and args.cutoff_leaflet != "no" and args.cutoff_leaflet != "optimise":
 	try:
 		args.cutoff_leaflet = float(args.cutoff_leaflet)
@@ -409,7 +398,6 @@ if args.cutoff_leaflet != "large" and args.cutoff_leaflet != "no" and args.cutof
 # import modules (doing it now otherwise might crash before we can display the help menu!)
 #=========================================================================================
 #generic science modules
-
 try:
     import math
     #print math.__version__
@@ -467,7 +455,6 @@ except:
 #=========================================================================================
 # sanity check
 #=========================================================================================
-
 if not os.path.isfile(args.grofilename):
 	print "Error: file " + str(args.grofilename) + " not found."
 	sys.exit(1)
@@ -529,14 +516,14 @@ except:
 			if line[-1] == "\n":
 				line = line[:-1]
 			l_content = line.split(',')
-
+			
 			#check line format
 			if len(l_content) != 3:
 				print "Error: the format of line " + str(l_index+1) + " is incorrect, see clustering_prot --help, note 7."
 				print "->", line
 				sys.exit(1)
 			else:
-				#store cutoffs
+				#store cutoffs 
 				s1_index = int(l_content[0])
 				s2_index = int(l_content[1])
 				s1s2_cutoff = float(l_content[2])
@@ -546,7 +533,7 @@ except:
 				#store list of indices
 				s_indices.append(s1_index)
 				s_indices.append(s2_index)
-
+		
 		#check there's no gap
 		s_indices_unique = np.unique(s_indices)
 		if min(s_indices_unique) != 0:
@@ -578,7 +565,7 @@ else:
             line = line[:-1]
         l_content = line.split(',')
         print "residues to be used: ",l_content
-
+        
         #check line format
         if len(l_content) < 2:
             print "Error: the format of line " + str(l_index+1) + " is incorrect, see clustering_prot --help, note 8."
@@ -588,10 +575,10 @@ else:
             #store res_used string
             s_index = int(l_content[0])
             res_used[s_index] = " and (resid "+" or resid ".join(l_content[1:])+")"
-
+            
             #store list of indices
             s_indices.append(s_index)
-
+		
     # report proteins with res_used lists and check there are no repeats
     print "res_used lists have been stored for species: ",s_indices
     s_indices_unique = np.unique(s_indices)
@@ -599,7 +586,7 @@ else:
         print "Error: one or more proteins have >1 res_used list defined."
         sys.exit(1)
 
-
+					
 if args.m_algorithm != "density":
 	if '--db_radius' in sys.argv:
 		print "Error: --db_radius option specified but --algorithm option set to '" + str(args.m_algorithm) + "'."
@@ -616,7 +603,7 @@ order_options = ["none","byspecies","all"]
 if args.order not in order_options:
     print "Error: --graph_order set to {} but should be one of {}".format( args.order, ", ".join(order_options) )
     sys.exit(1)
-
+    
 if args.max_clust != 'none':
 	try:
 		args.max_clust = int(args.max_clust)
@@ -647,13 +634,13 @@ else:
 	os.mkdir(args.output_folder + "/1_snapshots")
 	os.mkdir(args.output_folder + "/1_snapshots/sizes")
 	if args.cluster_groups_file!="no":
-		os.mkdir(args.output_folder + "/1_snapshots/groups")
-
+		os.mkdir(args.output_folder + "/1_snapshots/groups")	
+	
 	#interactions and compositions
 	os.mkdir(args.output_folder + "/2_proteins_interactions")
 	os.mkdir(args.output_folder + "/2_proteins_interactions/xvg")
 	os.mkdir(args.output_folder + "/3_clusters_compositions")
-
+	
 	#cluster sizes
 	os.mkdir(args.output_folder + "/4_clusters_sizes/")
 	if args.xtcfilename != "no":
@@ -669,7 +656,7 @@ else:
 		os.mkdir(args.output_folder + "/4_clusters_sizes/4_4_mostrep")
 		os.mkdir(args.output_folder + "/4_clusters_sizes/4_4_mostrep/png")
 		os.mkdir(args.output_folder + "/4_clusters_sizes/4_4_mostrep/xvg")
-
+	
 	#cluster groups
 	if args.cluster_groups_file!="no":
 		os.mkdir(args.output_folder + "/5_clusters_groups")
@@ -682,12 +669,12 @@ else:
 			os.mkdir(args.output_folder + "/5_clusters_groups/5_2_plots_1D/xvg")
 	#VMD
 	if args.xtcfilename != "no":
-		os.mkdir(args.output_folder + "/6_VMD")
-
+		os.mkdir(args.output_folder + "/6_VMD")	
+	
 	#create log
 	#----------
 	filename_log=os.getcwd() + '/' + str(args.output_folder) + '/clustering_prot.log'
-	output_log=open(filename_log, 'w')
+	output_log=open(filename_log, 'w')		
 	output_log.write("[clustering_prot v" + str(version_nb) + "]\n")
 	output_log.write("\nThis folder and its content were created using the following command:\n\n")
 	tmp_log = "python clustering_prot.py"
@@ -699,7 +686,7 @@ else:
 	#copy input files
 	#----------------
 	if args.selection_file_ff != "no":
-		shutil.copy2(args.selection_file_ff,args.output_folder + "/")
+		shutil.copy2(args.selection_file_ff,args.output_folder + "/")	
 	if args.cluster_groups_file != "no":
 		shutil.copy2(args.cluster_groups_file,args.output_folder + "/")
 	if args.species_file != "no":
@@ -742,7 +729,7 @@ def set_proteins_database():
 	res_code_3to1['TRP'] = 'W'
 	res_code_3to1['TYR'] = 'Y'
 	res_code_3to1['VAL'] = 'V'
-
+	
 	#make the colour parameter readable from the supplied text file
 	proteins_db_colours = {}
 	proteins_db_colours["OmpF"] = 'c'
@@ -753,12 +740,12 @@ def set_proteins_database():
 	proteins_db_sequences["OmpF"] = 'AEIYNKDGNKVDLYGKAVGLHYFSKGNGENSYGGNGDMTYARLGFKGETQINSDLTGYGQWEYNFQGNNSEGADAQTGNKTRLAFAGLKYADVGSFDYGRNYGVVYDALGYTDMLPEFGGDTAYSDDFFVGRVGGVATYRNSNFFGLVDGLNFAVQYLGKNERDTARRSNGDGVGGSISYEYEGFGIVGAYGAADRTNLQEAQPLGNGKKAEQWATGLKYDANNIYLAANYGETRNATPITNKFTNTSGFANKTQDVLLVAQYQFDFGLRPSIAYTKSKAKDVEGIGDVDLVNYFEVGATYYFNKNMSTYVDYIINQIDSDNKLGVGSDDTVAVGIVYQFAEIYNKDGNKVDLYGKAVGLHYFSKGNGENSYGGNGDMTYARLGFKGETQINSDLTGYGQWEYNFQGNNSEGADAQTGNKTRLAFAGLKYADVGSFDYGRNYGVVYDALGYTDMLPEFGGDTAYSDDFFVGRVGGVATYRNSNFFGLVDGLNFAVQYLGKNERDTARRSNGDGVGGSISYEYEGFGIVGAYGAADRTNLQEAQPLGNGKKAEQWATGLKYDANNIYLAANYGETRNATPITNKFTNTSGFANKTQDVLLVAQYQFDFGLRPSIAYTKSKAKDVEGIGDVDLVNYFEVGATYYFNKNMSTYVDYIINQIDSDNKLGVGSDDTVAVGIVYQFAEIYNKDGNKVDLYGKAVGLHYFSKGNGENSYGGNGDMTYARLGFKGETQINSDLTGYGQWEYNFQGNNSEGADAQTGNKTRLAFAGLKYADVGSFDYGRNYGVVYDALGYTDMLPEFGGDTAYSDDFFVGRVGGVATYRNSNFFGLVDGLNFAVQYLGKNERDTARRSNGDGVGGSISYEYEGFGIVGAYGAADRTNLQEAQPLGNGKKAEQWATGLKYDANNIYLAANYGETRNATPITNKFTNTSGFANKTQDVLLVAQYQFDFGLRPSIAYTKSKAKDVEGIGDVDLVNYFEVGATYYFNKNMSTYVDYIINQIDSDNKLGVGSDDTVAVGIVYQF'
 	proteins_db_sequences["BtuB"] = 'QDTSPDTLVVTANRFEQPRSTVLAPTTVVTRQDIDRWQSTSVNDVLRRLPGVDITQNGGSGQLSSIFIRGTNASHVLVLIDGVRLNLAGVSGSADLSQFPIALVQRVEYIRGPRSAVYGSDAIGGVVNIITTRDEPGTEISAGWGSNSYQNYDVSTQQQLGDKTRVTLLGDYAHTHGYDVVAYGNTGTQAQTDNDGFLSKTLYGALEHNFTDAWSGFVRGYGYDNRTNYDAYYSPGSPLLDTRKLYSQSWDAGLRYNGELIKSQLITSYSHSKDYNYDPHYGRYDSSATLDEMKQYTVQWANNVIVGHGSIGAGVDWQKQTTTPGTGYVEDGYDQRNTGIYLTGLQQVGDFTFEGAARSDDNSQFGRHGTWQTSAGWEFIEGYRFIASYGTSYKAPNLGQLYGFYGNPNLDPEKSKQWEGAFEGLTAGVNWRISGYRNDVSDLIDYDDHTLKYYNEGKARIKGVEATANFDTGPLTHTVSYDYVDARNAITDTPLLRRAKQQVKYQLDWQLYDFDWGITYQYLGTRYDKDYSSYPYQTVKMGGVSLWDLAVAYPVTSHLTVRGKIANLFDKDYETVYGYQTAGREYTLSGSYTF'
 	proteins_db_sequences["transportan"] = 'GWTLNSAGYLLGKINLKALAALAKKIL'
-
+	
 	proteins_db_multiplicity = {}
 	proteins_db_multiplicity["OmpF"] = 3
 	proteins_db_multiplicity["BtuB"] = 1
 	proteins_db_multiplicity["transportan"] = 1
-
+	
 	if args.species_file != "no":
 		print "\nReading species definition file..."
 		with open(args.species_file) as f:
@@ -768,7 +755,7 @@ def set_proteins_database():
 		for l_index in range(0,nb_lines):
 			#get current line
 			line = lines[l_index]
-
+						
 			#check format
 			if line[-1] == "\n":
 				line = line[:-1]
@@ -803,14 +790,14 @@ def set_proteins_database():
 
 	return
 def get_sequence(seq3):
-
+	
 	seq1 = ""
 	for r in seq3:
 		try:
 			seq1 += res_code_3to1[r]
 		except:
-			print "Warning: unknown residue code '" + str(r)
-
+			print "Warning: unknown residue code '" + str(r) 
+			
 	return seq1
 def set_lipids_beads():
 
@@ -833,7 +820,7 @@ def set_lipids_beads():
 
 	return
 def load_MDA_universe():
-
+	
 	global U
 	global all_atoms
 	global nb_atoms
@@ -848,8 +835,8 @@ def load_MDA_universe():
 	if args.xtcfilename == "no":
 		print "\nLoading file..."
 		U = Universe(args.grofilename)
-		all_atoms = U.select_atoms("all")
-		nb_atoms = all_atoms.n_atoms
+		all_atoms = U.selectAtoms("all")
+		nb_atoms = all_atoms.numberOfAtoms()
 		nb_frames_xtc = 1
 		frames_to_process = [0]
 		frames_to_write = [True]
@@ -862,21 +849,20 @@ def load_MDA_universe():
 			U_gro = Universe(args.grofilename)
 		U = Universe(args.grofilename, args.xtcfilename)
 		U_timestep = U.trajectory.dt
-		all_atoms = U.select_atoms("all")
-		print all_atoms
-		nb_atoms = all_atoms.n_atoms
-		nb_frames_xtc = U.trajectory.n_frames
-
+		all_atoms = U.selectAtoms("all")
+		nb_atoms = all_atoms.numberOfAtoms()
+		nb_frames_xtc = U.trajectory.numframes		
+		
 		#sanity check
 		if U.trajectory[nb_frames_xtc-1].time/float(1000) < args.t_start:
 			print "Error: the trajectory duration (" + str(U.trajectory.time/float(1000)) + "ns) is shorted than the starting stime specified (" + str(args.t_start) + "ns)."
 			sys.exit(1)
-		if U.trajectory.n_frames < args.frames_dt:
+		if U.trajectory.numframes < args.frames_dt:
 			print "Warning: the trajectory contains fewer frames (" + str(nb_frames_xtc) + ") than the frame step specified (" + str(args.frames_dt) + ")."
 
 		#rewind traj (very important to make sure that later the 1st frame of the xtc will be used for leaflet identification)
 		U.trajectory.rewind()
-
+		
 		#create list of index of frames to process
 		if args.t_end != -1:
 			f_end = int((args.t_end*1000 - U.trajectory[0].time) / float(U_timestep))
@@ -884,7 +870,7 @@ def load_MDA_universe():
 				print "Error: the starting time specified is before the beginning of the xtc."
 				sys.exit(1)
 		else:
-			f_end = nb_frames_xtc - 1
+			f_end = nb_frames_xtc - 1		
 		if args.t_start != -1:
 			f_start = int((args.t_start*1000 - U.trajectory[0].time) / float(U_timestep))
 			if f_start > f_end:
@@ -906,7 +892,7 @@ def load_MDA_universe():
 	return
 def identify_ff():
 	print "\nReading selection file for flipflopping lipids..."
-
+	
 	#declare variables
 	global lipids_ff_nb
 	global lipids_ff_info
@@ -929,7 +915,7 @@ def identify_ff():
 	lipids_sele_ff_bead = {}
 	lipids_sele_ff_bonds = {}
 	lipids_sele_ff_VMD_string={}
-
+		
 	with open(args.selection_file_ff) as f:
 		lines = f.readlines()
 	lipids_ff_nb = len(lines)
@@ -951,7 +937,7 @@ def identify_ff():
 			lip_leaflet = line_content[2]
 			lip_bead = line_content[3]
 			lipids_ff_info[l_index] = [lip_resname,lip_resnum,lip_leaflet,lip_bead]
-
+						
 			#update: starting leaflets
 			if lip_leaflet not in lipids_ff_leaflet:
 				lipids_ff_leaflet.append(lip_leaflet)
@@ -964,11 +950,11 @@ def identify_ff():
 			else:
 				print "->unknown starting leaflet '" + str(lip_leaflet) + "'."
 				sys.exit(1)
-
+			
 			#update: resnames
 			if lip_resname not in lipids_ff_resnames:
 				lipids_ff_resnames.append(lip_resname)
-
+	
 			#update: leaflet selection string
 			if l_index==0:
 				leaflet_sele_string+="(resname " + str(lip_resname) + " and resnum " + str(lip_resnum) + ")"
@@ -976,23 +962,23 @@ def identify_ff():
 				leaflet_sele_string+=" or (resname " + str(lip_resname) + " and resnum " + str(lip_resnum) + ")"
 
 			#create selections
-			lipids_sele_ff[l_index] = U.select_atoms("resname " + str(lip_resname) + " and resnum " + str(lip_resnum))
-			lipids_sele_ff_bead[l_index] = lipids_sele_ff[l_index].select_atoms("name " + str(lip_bead))
+			lipids_sele_ff[l_index] = U.selectAtoms("resname " + str(lip_resname) + " and resnum " + str(lip_resnum))
+			lipids_sele_ff_bead[l_index] = lipids_sele_ff[l_index].selectAtoms("name " + str(lip_bead))
 			lipids_sele_ff_VMD_string[l_index]="resname " + str(lipids_ff_info[l_index][0]) + " and resid " + str(lipids_ff_info[l_index][1])
-			if lipids_sele_ff[l_index].n_atoms == 0:
+			if lipids_sele_ff[l_index].numberOfAtoms() == 0:
 				print "Error:"
 				print line
 				print "-> no such lipid found."
-				sys.exit(1)
+				sys.exit(1)	
 		except:
 			print "Error: invalid flipflopping lipid selection string on line " + str(l_index+1) + ": '" + line + "'"
 			sys.exit(1)
-	leaflet_sele_string+=")"
+	leaflet_sele_string+=")"		
 
 	return
 def identify_proteins():
     print "\nIdentifying proteins..."
-
+	
 	#import modules
     if args.m_algorithm == "density":
         global DBSCAN
@@ -1014,7 +1000,7 @@ def identify_proteins():
     global proteins_residues
     global proteins_boundaries
     global proteins_multiplicity
-    global proteins_sele_string_VMD
+    global proteins_sele_string_VMD	
     global pres_oligomers
     global nb_atom_per_protein
 
@@ -1033,46 +1019,37 @@ def identify_proteins():
     pres_oligomers = False
 
     #check for protein presence
-
     proteins_nb["all"] = 0
-    proteins_sele["all"] = U.select_atoms("protein")
-    if proteins_sele["all"].n_atoms == 0:
+    proteins_sele["all"] = U.selectAtoms("protein")
+    if proteins_sele["all"].numberOfAtoms() == 0:
         print "Error: no protein detected."
         sys.exit(1)
 
     #initialise browsing variables
     tmp_a = proteins_sele["all"][0]
-    tmp_resnames = proteins_sele["all"].resnames
+    tmp_resnames = proteins_sele["all"].resnames()
     first_resnum = tmp_a.resnum
     prev_resnum_abs = tmp_a.resnum
-    prev_atom_nb = tmp_a.index + 1
+    prev_atom_nb = tmp_a.number + 1
     last_resnum = tmp_a.resnum
-    last_atom_nb = tmp_a.index + 1
+    last_atom_nb = tmp_a.number + 1
     last_segid = tmp_a.segid
 
     #browse protein atoms
     #====================
-
-    print "HERE 2!!!"
-    print proteins_sele["all"][1:]
-
     for a in proteins_sele["all"][1:]:
-
-        #calculate difference with previous residue/atom numbers
+        #calculate difference with previous residue/atom numbers 
         #-------------------------------------------------------
-
         delta_resnum = a.resnum - last_resnum
-        delta_atom_nb = a.index + 1 - last_atom_nb
-
-
+        delta_atom_nb = a.number + 1 - last_atom_nb
+                
         #check if new protein
         #--------------------
-
         if delta_resnum < 0 or a.segid != last_segid or delta_atom_nb > 1:
-
+                        
             #get composition
             tmp_comp = tmp_resnames[(prev_resnum_abs - first_resnum):(last_resnum_abs - first_resnum)].tolist()
-
+                        
             #compare to existing species composition
             if proteins_nb["all"] == 0:
                 tmp_specie = "A"
@@ -1085,26 +1062,21 @@ def identify_proteins():
 
             #case: new/first specie
             if tmp_specie not in proteins_species:
-
                 proteins_species.append(tmp_specie)
-
                 # get CoG residue selection string
                 if proteins_species.index(tmp_specie) in res_used: # res_used has integer keys
-
                     cog_selection_str = res_used[proteins_species.index(tmp_specie)]
-
                 else:
-
                     cog_selection_str = ""
                 proteins_nb[tmp_specie] = 0
                 proteins_sele[tmp_specie] = {}
                 proteins_sele_forCoG[tmp_specie] = {}
                 proteins_sele_string_VMD[tmp_specie] = {}
                 proteins_residues[tmp_specie] = tmp_comp
-                proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
-                proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
+                proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
+                proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
                 proteins_sele_string_VMD[tmp_specie][proteins_nb[tmp_specie]] = "serial " + str(prev_atom_nb) + " to " + str(last_atom_nb)
-                proteins_length[tmp_specie] = proteins_sele[tmp_specie][proteins_nb[tmp_specie]].n_residues
+                proteins_length[tmp_specie] = proteins_sele[tmp_specie][proteins_nb[tmp_specie]].numberOfResidues()
             #case: existing one
             else:
                 # get CoG residue selection string
@@ -1112,56 +1084,43 @@ def identify_proteins():
                     cog_selection_str = res_used[proteins_species.index(tmp_specie)]
                 else:
                     cog_selection_str = ""
-                proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
-                proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
+                proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
+                proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
                 proteins_sele_string_VMD[tmp_specie][proteins_nb[tmp_specie]] = "serial " + str(prev_atom_nb) + " to " + str(last_atom_nb)
-
+                            
             #update number of proteins and counters
             proteins_nb[tmp_specie] += 1
             proteins_nb["all"] += 1
             prev_resnum_abs += proteins_length[tmp_specie]
-            prev_atom_nb = a.index + 1
-
+            prev_atom_nb = a.number + 1
+    
         #update residue/atom numbers
         #---------------------------
-
         last_resnum = a.resnum
         last_resnum_abs = prev_resnum_abs + a.resnum
-        last_atom_nb = a.index + 1
+        last_atom_nb = a.number + 1
         last_segid = a.segid
-
+    
     #add last protein
     #================
-
     tmp_comp = tmp_resnames[(prev_resnum_abs - first_resnum):(last_resnum_abs - first_resnum)].tolist()
-
     if proteins_nb["all"] == 0:
         tmp_specie = "A"
-
     else:
-
-        tmp_specie = chr(ord(proteins_species[-1]) + 1)
-
+        tmp_specie = chr(ord(proteins_species[-1]) + 1)				
         for k in proteins_residues.keys():
-
             if tmp_comp == proteins_residues[k]:
-
                 tmp_specie = k
                 break
-
     if tmp_specie in res_used:
-
         cog_selection_str = res_used[tmp_specie]
     else:
         cog_selection_str = ""
     if tmp_specie not in proteins_species:
-
         proteins_species.append(tmp_specie)
-
         # get CoG residue selection string
         if proteins_species.index(tmp_specie) in res_used: # res_used has integer keys
             cog_selection_str = res_used[proteins_species.index(tmp_specie)]
-
         else:
             cog_selection_str = ""
         proteins_nb[tmp_specie] = 0
@@ -1169,25 +1128,24 @@ def identify_proteins():
         proteins_sele_forCoG[tmp_specie] = {}
         proteins_sele_string_VMD[tmp_specie] = {}
         proteins_residues[tmp_specie] = tmp_comp
-        proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
-        proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
+        proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
+        proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
         proteins_sele_string_VMD[tmp_specie][proteins_nb[tmp_specie]] = "serial " + str(prev_atom_nb) + " to " + str(last_atom_nb)
-        proteins_length[tmp_specie] = proteins_sele[tmp_specie][proteins_nb[tmp_specie]].n_residues
+        proteins_length[tmp_specie] = proteins_sele[tmp_specie][proteins_nb[tmp_specie]].numberOfResidues()
     else:
         # get CoG residue selection string
         if proteins_species.index(tmp_specie) in res_used: # res_used has integer keys
             cog_selection_str = res_used[proteins_species.index(tmp_specie)]
         else:
             cog_selection_str = ""
-        proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
-        proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].select_atoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
+        proteins_sele[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb))
+        proteins_sele_forCoG[tmp_specie][proteins_nb[tmp_specie]] = proteins_sele["all"].selectAtoms("bynum " + str(prev_atom_nb) + ":" + str(last_atom_nb)+cog_selection_str)
         proteins_sele_string_VMD[tmp_specie][proteins_nb[tmp_specie]] = "serial " + str(prev_atom_nb) + " to " + str(last_atom_nb)
     proteins_nb[tmp_specie] += 1
     proteins_nb["all"] += 1
 
     #check if some the proteins are known
     #====================================
-
     for s in proteins_species:
         proteins_names[s] = s
         proteins_colours[s] = np.random.rand(3,)
@@ -1200,10 +1158,9 @@ def identify_proteins():
                 proteins_multiplicity[s] = int(proteins_db_multiplicity[name])
         if proteins_multiplicity[s] > 1:
             pres_oligomers = True
-
+            
     #display results
     #================
-
     global nb_species, nb_proteins
     nb_species = len(proteins_species)
     nb_proteins = proteins_nb["all"]
@@ -1220,7 +1177,7 @@ def identify_proteins():
             args.nx_cutoff = cog_cutoff_values[0,0]
         if nb_species < np.sqrt(len(cog_cutoff_values.keys())):
             print " -warning: more cutoff values specified than possible pair of species."
-        print " -the following contact cutoffs will be used (in Angstrom):"
+        print " -the following contact cutoffs will be used (in Angstrom):"		
         for s_index in range(0, nb_species):
             for ss_index in range(s_index, nb_species):
                 print "   " + proteins_names[proteins_species[s_index]] + "-" + proteins_names[proteins_species[ss_index]] + ": " + str(cog_cutoff_values[s_index, ss_index])
@@ -1245,14 +1202,14 @@ def identify_proteins():
         prot_index2rel[p_start:p_end] -= p_start
         prot_index2sindex[p_start:p_end] = s_index
         proteins_boundaries[proteins_species[s_index]] = [int(p_start), int(p_end)]
-
+        
         #retrieve number of atoms per protein
-        nb_atom_per_protein[proteins_species[s_index]] = proteins_sele[proteins_species[s_index]][0].n_atoms
-
+        nb_atom_per_protein[proteins_species[s_index]] = proteins_sele[proteins_species[s_index]][0].numberOfAtoms()
+        
     return
 def identify_leaflets():
 	print "\nIdentifying leaflets..."
-
+	
 	#declare variables
 	global leaflet_sele
 	global leaflet_sele_atoms
@@ -1261,10 +1218,10 @@ def identify_leaflets():
 	for l in ["lower","upper","both"]:
 		leaflet_sele[l] = {}
 		leaflet_sele_atoms[l] = {}
-
+	
 	#check the leaflet selection string is valid
-	test_beads = U.select_atoms(leaflet_sele_string)
-	if test_beads.n_atoms == 0:
+	test_beads = U.selectAtoms(leaflet_sele_string)
+	if test_beads.numberOfAtoms() == 0:
 		print "Error: invalid selection string '" + str(leaflet_sele_string) + "'"
 		print "-> no particles selected."
 		sys.exit(1)
@@ -1283,11 +1240,11 @@ def identify_leaflets():
 				L = MDAnalysis.analysis.leaflet.LeafletFinder(U_gro, leaflet_sele_string, args.cutoff_leaflet)
 			else:
 				L = MDAnalysis.analysis.leaflet.LeafletFinder(U, leaflet_sele_string, args.cutoff_leaflet)
-
+	
 		if np.shape(L.groups())[0]<2:
 			print "Error: imposssible to identify 2 leaflets."
 			sys.exit(1)
-
+		
 		if L.group(0).centerOfGeometry()[2] > L.group(1).centerOfGeometry()[2]:
 			if args.use_gro:
 				tmp_up = L.group(0)
@@ -1298,26 +1255,26 @@ def identify_leaflets():
 		else:
 			if args.use_gro:
 				tmp_up = L.group(1)
-				tmp_lw = L.group(0)
+				tmp_lw = L.group(0)			
 			else:
 				leaflet_sele["upper"] = L.group(1)
 				leaflet_sele["lower"] = L.group(0)
 
-		if args.use_gro:
+		if args.use_gro:		
 			tmp_up_indices = tmp_up.indices()
 			tmp_lw_indices = tmp_lw.indices()
 			tmp_up_nb_atoms = len(tmp_up_indices)
 			tmp_lw_nb_atoms = len(tmp_lw_indices)
-			leaflet_sele["upper"] = U.select_atoms("bynum " + str(tmp_up_indices[0] + 1))
-			leaflet_sele["lower"] = U.select_atoms("bynum " + str(tmp_lw_indices[0] + 1))
+			leaflet_sele["upper"] = U.selectAtoms("bynum " + str(tmp_up_indices[0] + 1))
+			leaflet_sele["lower"] = U.selectAtoms("bynum " + str(tmp_lw_indices[0] + 1))
 			for index in range(1,tmp_up_nb_atoms):
-				leaflet_sele["upper"] += U.select_atoms("bynum " + str(tmp_up_indices[index] +1 ))
+				leaflet_sele["upper"] += U.selectAtoms("bynum " + str(tmp_up_indices[index] +1 ))
 				progress = '\r -identifying upper leaflet from gro file... ' + str(round(index/float(tmp_up_nb_atoms)*100,1)) + '%   '
 				sys.stdout.flush()
 				sys.stdout.write(progress)
 			print ''
 			for index in range(1,tmp_lw_nb_atoms):
-				leaflet_sele["lower"] += U.select_atoms("bynum " + str(tmp_lw_indices[index] + 1))
+				leaflet_sele["lower"] += U.selectAtoms("bynum " + str(tmp_lw_indices[index] + 1))
 				progress = '\r -identifying lower leaflet from gro file... ' + str(round(index/float(tmp_lw_nb_atoms)*100,1)) + '%   '
 				sys.stdout.flush()
 				sys.stdout.write(progress)
@@ -1325,45 +1282,45 @@ def identify_leaflets():
 
 		leaflet_sele["both"] = leaflet_sele["lower"] + leaflet_sele["upper"]
 		if np.shape(L.groups())[0] == 2:
-			print " -found 2 leaflets: ", leaflet_sele["upper"].n_residues, '(upper) and ', leaflet_sele["lower"].n_residues, '(lower) lipids'
+			print " -found 2 leaflets: ", leaflet_sele["upper"].numberOfResidues(), '(upper) and ', leaflet_sele["lower"].numberOfResidues(), '(lower) lipids'
 		else:
 			other_lipids=0
 			for g in range(2, np.shape(L.groups())[0]):
-				other_lipids += L.group(g).n_residues
-			print " -found " + str(np.shape(L.groups())[0]) + " groups: " + str(leaflet_sele["upper"].n_residues) + "(upper), " + str(leaflet_sele["lower"].n_residues) + "(lower) and " + str(other_lipids) + " (others) lipids respectively"
+				other_lipids += L.group(g).numberOfResidues()
+			print " -found " + str(np.shape(L.groups())[0]) + " groups: " + str(leaflet_sele["upper"].numberOfResidues()) + "(upper), " + str(leaflet_sele["lower"].numberOfResidues()) + "(lower) and " + str(other_lipids) + " (others) lipids respectively"
 	#use cog and z coordinates in the GRO file supplied:
 	else:
 		if args.use_gro:
-			tmp_all = U_gro.select_atoms(leaflet_sele_string)
+			tmp_all = U_gro.selectAtoms(leaflet_sele_string)
 			tmp_lipids_avg_z = tmp_all.centerOfGeometry()[2]
-			tmp_up = tmp_all.select_atoms("prop z > " + str(tmp_lipids_avg_z))
-			tmp_lw = tmp_all.select_atoms("prop z < " + str(tmp_lipids_avg_z))
+			tmp_up = tmp_all.selectAtoms("prop z > " + str(tmp_lipids_avg_z))
+			tmp_lw = tmp_all.selectAtoms("prop z < " + str(tmp_lipids_avg_z))
 			tmp_up_indices = tmp_up.indices()
 			tmp_lw_indices = tmp_lw.indices()
 			tmp_up_nb_atoms = len(tmp_up_indices)
 			tmp_lw_nb_atoms = len(tmp_lw_indices)
-			leaflet_sele["upper"] = U.select_atoms("bynum " + str(tmp_up_indices[0] + 1))
-			leaflet_sele["lower"] = U.select_atoms("bynum " + str(tmp_lw_indices[0] + 1))
+			leaflet_sele["upper"] = U.selectAtoms("bynum " + str(tmp_up_indices[0] + 1))
+			leaflet_sele["lower"] = U.selectAtoms("bynum " + str(tmp_lw_indices[0] + 1))
 			for index in range(1,tmp_up_nb_atoms):
-				leaflet_sele["upper"] += U.select_atoms("bynum " + str(tmp_up_indices[index] + 1))
+				leaflet_sele["upper"] += U.selectAtoms("bynum " + str(tmp_up_indices[index] + 1))
 				progress = '\r -identifying upper leaflet from gro file... ' + str(round(index/float(tmp_up_nb_atoms)*100,1)) + '%   '
 				sys.stdout.flush()
 				sys.stdout.write(progress)
 			print ''
 			for index in range(1,tmp_lw_nb_atoms):
-				leaflet_sele["lower"] += U.select_atoms("bynum " + str(tmp_lw_indices[index] + 1))
+				leaflet_sele["lower"] += U.selectAtoms("bynum " + str(tmp_lw_indices[index] + 1))
 				progress = '\r -identifying lower leaflet from gro file... ' + str(round(index/float(tmp_lw_nb_atoms)*100,1)) + '%   '
 				sys.stdout.flush()
 				sys.stdout.write(progress)
 			leaflet_sele["both"] = leaflet_sele["upper"] + leaflet_sele["lower"]
 			print ''
 		else:
-			leaflet_sele["both"] = U.select_atoms(leaflet_sele_string)
+			leaflet_sele["both"] = U.selectAtoms(leaflet_sele_string)
 			tmp_lipids_avg_z = leaflet_sele["both"].centerOfGeometry()[2]
-			leaflet_sele["upper"] = leaflet_sele["both"].select_atoms("prop z > " + str(tmp_lipids_avg_z))
-			leaflet_sele["lower"] = leaflet_sele["both"].select_atoms("prop z < " + str(tmp_lipids_avg_z))
-		print " -found 2 leaflets: ", leaflet_sele["upper"].n_residues, '(upper) and ', leaflet_sele["lower"].n_residues(), '(lower) lipids'
-
+			leaflet_sele["upper"] = leaflet_sele["both"].selectAtoms("prop z > " + str(tmp_lipids_avg_z))
+			leaflet_sele["lower"] = leaflet_sele["both"].selectAtoms("prop z < " + str(tmp_lipids_avg_z))
+		print " -found 2 leaflets: ", leaflet_sele["upper"].numberOfResidues(), '(upper) and ', leaflet_sele["lower"].numberOfResidues(), '(lower) lipids'
+		
 	return
 def initialise_groups():
 
@@ -1382,7 +1339,7 @@ def initialise_groups():
 	colours_groups_dict = {}
 	colours_groups_list = []
 	colours_groups_map = "custom"
-
+	
 	#read file
 	print "\nReading cluster groups definition file..."
 	with open(args.cluster_groups_file) as f:
@@ -1401,14 +1358,14 @@ def initialise_groups():
 		tmp_beg = int(l_content[0])
 		tmp_end = l_content[1]
 		colours_groups_dict[g_index] = l_content[2]						#attribute colour to group
-		if l_content[2] not in colormaps_possible:
+		if l_content[2] not in colormaps_possible:	
 			colours_groups_list.append(colours_groups_dict[g_index])
 		if tmp_end == "max":
 			tmp_end = 100000											#put a stupidly big size to cap the open ended group
 		else:
 			tmp_end = int(tmp_end)
 		groups_boundaries[g_index] = [tmp_beg,tmp_end]
-
+		
 	#display results
 	print " -found " + str(groups_number) + " cluster groups:"
 	for g_index in range(0,groups_number):
@@ -1432,7 +1389,7 @@ def initialise_groups():
 			sys.exit(1)
 		prev_beg = groups_boundaries[g_index][0]
 		prev_end = groups_boundaries[g_index][1]
-
+	
 	#create equivalency table between groups and sizes
 	for g_index in range(0,groups_number):
 		bb = groups_boundaries[g_index]
@@ -1445,7 +1402,7 @@ def initialise_groups():
 	if max(groups_sizes_dict.keys())!= 100000:															    #this handles potentially unaccounted for sizes above the maximum specified by the user (in case it's not an open group)
 		for tmp_size in range(max(groups_sizes_dict.keys())+1,100001):
 			groups_sizes_dict[tmp_size] = groups_number
-
+	
 	#check whether a colour map was specified
 	if groups_number > 1 and len(np.unique(colours_groups_dict.values())) == 1:
 		if np.unique(colours_groups_dict.values())[0] in colormaps_possible:
@@ -1461,7 +1418,7 @@ def initialise_groups():
 		for g_index in range(0, groups_number):
 			colours_groups_dict[g_index] = groups_colors_value[g_index]
 			colours_groups_list.append(groups_colors_value[g_index])
-
+			
 	#create label for each group
 	for g_index in range(0, groups_number):
 		if groups_boundaries[g_index][1] == 100000:
@@ -1475,7 +1432,7 @@ def initialise_groups():
 	groups_labels[groups_number] = "other"
 	groups_labels[-1] = "lower"
 	groups_labels[groups_number+1] = "upper"
-
+		
 	return
 
 #=========================================================================================
@@ -1490,17 +1447,16 @@ def struct_time():
 	frames_time = np.zeros(nb_frames_to_process)
 
 	return
-
 def struct_clusters():
-
+	
 	#NB:
 	# 1. relative distribution of protein population at each frame
 	# 2. for groups groups_number = "other", -1 = lower, groups_number + 1 = upper
-
+	
 	global clusters_comp
 	global clusters_biggest
 	global clusters_mostrep
-
+	
 	# This stores the composition of each cluster of each size
 	clusters_comp = {}
 
@@ -1510,22 +1466,22 @@ def struct_clusters():
 		global clusters_pc_groups
 		clusters_nb_groups = {g_index: np.zeros(nb_frames_to_process) for g_index in range(-1,groups_number + 2)}
 		clusters_pc_groups = {g_index: np.zeros(nb_frames_to_process) for g_index in range(-1,groups_number + 2)}
-
+	
 	# This stores, for each frame, info re the biggest cluster
 	clusters_biggest = {}
 	clusters_biggest['nb'] = np.zeros(nb_frames_to_process)
 	clusters_biggest['pc'] = np.zeros(nb_frames_to_process)
 	clusters_biggest['size'] = np.zeros(nb_frames_to_process)
-
+	
 	# This stores, for each frame, info re the most representative cluster
 	clusters_mostrep = {}
 	clusters_mostrep['nb'] = np.zeros(nb_frames_to_process)
 	clusters_mostrep['pc'] = np.zeros(nb_frames_to_process)
 	clusters_mostrep['size'] = np.zeros(nb_frames_to_process)
-
+		
 	return
 def struct_proteins():
-
+	
 	#proteins
 	#========
 	#NB:
@@ -1536,13 +1492,13 @@ def struct_proteins():
 	#    has an index equal to the number of proteins of type 'A'
 
 	global proteins_size
-	global proteins_ctcts_res
+	global proteins_ctcts_res	
 	global proteins_ctcts_res_size
 	global proteins_ctcts_res_lip_size
 	global proteins_ctcts_prot
 	global proteins_nb_neighbours
 	proteins_size = np.zeros((nb_frames_to_process, nb_proteins), int)
-
+		
 	if args.cluster_groups_file != "no":
 		global proteins_group
 		global proteins_ctcts_res_group
@@ -1569,7 +1525,7 @@ def struct_proteins():
 				proteins_ctcts_res_lip_group["upper"][s_index1][g_index] = np.zeros(proteins_length[proteins_species[s_index1]])
 				proteins_ctcts_res_lip_group["lower"][s_index1][g_index] = np.zeros(proteins_length[proteins_species[s_index1]])
 		for s_index2 in range(s_index1, nb_species):
-			proteins_ctcts_res[s_index1, s_index2] = np.zeros((proteins_length[proteins_species[s_index1]], proteins_length[proteins_species[s_index2]]))
+			proteins_ctcts_res[s_index1, s_index2] = np.zeros((proteins_length[proteins_species[s_index1]], proteins_length[proteins_species[s_index2]]))		
 			proteins_ctcts_res_size[s_index1, s_index2] = {}
 			proteins_ctcts_res_group[s_index1, s_index2] = {}
 			if args.cluster_groups_file != "no":
@@ -1583,25 +1539,25 @@ def struct_proteins():
 #=========================================================================================
 
 def get_distances(box_dim):
-
+		
 	#method: use minimum distance between proteins
 	#---------------------------------------------
 	if args.m_algorithm == "min":
 		#pre-process: get protein coordinates
 		tmp_proteins_coords = {}
 		for p_index in range(0, nb_proteins):
-			tmp_proteins_coords[p_index] = coords_remove_whole(proteins_sele[prot_index2specie[p_index]][prot_index2rel[p_index]].positions, box_dim)
+			tmp_proteins_coords[p_index] = coords_remove_whole(proteins_sele[prot_index2specie[p_index]][prot_index2rel[p_index]].coordinates(), box_dim)
 
 		#store min distance between each proteins
 		dist_matrix = 100000 * np.ones((nb_proteins, nb_proteins))
 		for n in range(nb_proteins, 1, -1):
 			dist_matrix[nb_proteins-n,nb_proteins-n+1:nb_proteins] = map(lambda pp: np.min(MDAnalysis.analysis.distances.distance_array(np.float32(tmp_proteins_coords[nb_proteins-n]), np.float32(tmp_proteins_coords[pp]), box_dim)), range(nb_proteins-n+1,nb_proteins))
 			dist_matrix[nb_proteins-n+1:nb_proteins,nb_proteins-n] = dist_matrix[nb_proteins-n,nb_proteins-n+1:nb_proteins]
-
+		
 	#method: use distance between cog
 	#--------------------------------
 	else:
-		tmp_proteins_cogs = np.asarray(map(lambda p_index: calculate_cog(coords_remove_whole(proteins_sele_forCoG[prot_index2specie[p_index]][prot_index2rel[p_index]].positions, box_dim), box_dim), range(0,nb_proteins)))
+		tmp_proteins_cogs = np.asarray(map(lambda p_index: calculate_cog(coords_remove_whole(proteins_sele_forCoG[prot_index2specie[p_index]][prot_index2rel[p_index]].coordinates(), box_dim), box_dim), range(0,nb_proteins)))
 		dist_matrix = MDAnalysis.analysis.distances.distance_array(np.float32(tmp_proteins_cogs), np.float32(tmp_proteins_cogs), box_dim)
 		#remove self-connections
 		np.fill_diagonal(dist_matrix, 100000)
@@ -1613,46 +1569,45 @@ def coords_remove_whole(coords, box_dim):
 
 	coords[:,0] -= np.floor(coords[:,0]/float(box_dim[0])) * box_dim[0]
 	coords[:,1] -= np.floor(coords[:,1]/float(box_dim[1])) * box_dim[1]
-
+	
 	return coords
 def coords_center_in_box(coords, center, box_dim):
-
+	
 	#this function centers coords around center and apply pbc along x and y
 	#convention: coords between -box_dim/2 and +box_dim/2 along x and y
-
+	
 	coords_loc = np.copy(coords)
-
+	
 	#centering
 	#---------
 	coords_loc -= center
-
+	
 	#pbc applied along x and y directions
 	#------------------------------------
 	coords_loc[:,0] -= (np.floor(2*coords_loc[:,0]/float(box_dim[0])) + (1-np.sign(coords_loc[:,0]))/2) * box_dim[0]
 	coords_loc[:,1] -= (np.floor(2*coords_loc[:,1]/float(box_dim[1])) + (1-np.sign(coords_loc[:,1]))/2) * box_dim[1]
-
+	
 	return coords_loc
 def calculate_cog(tmp_coords, box_dim):
-
-	#this method allows to take pbc into account when calculcating the center of geometry
+	
+	#this method allows to take pbc into account when calculcating the center of geometry 
 	#see: http://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
-
+		
 	cog_coord = np.zeros(3)
 	tmp_nb_atoms = np.shape(tmp_coords)[0]
-
+	
 	for n in range(0,3):
 		tet = tmp_coords[:,n] * 2 * math.pi / float(box_dim[n])
 		xsi = np.cos(tet)
 		zet = np.sin(tet)
 		tet_avg = math.atan2(-np.average(zet),-np.average(xsi)) + math.pi
 		cog_coord[n] = tet_avg * box_dim[n] / float(2*math.pi)
-
+	
 	return cog_coord
-
 def detect_clusters_connectivity(dist, box_dim):
-
+	
 	#use networkx algorithm
-
+	
 	#different cutoff for different species
 	#--------------------------------------
 	if nx_cutoff_file and nb_species > 1:
@@ -1666,25 +1621,24 @@ def detect_clusters_connectivity(dist, box_dim):
 		tmp_connected = {}
 		for s_index in range(0, nb_species):
 			tmp_connected[s_index] = d[s_index, 0]
-			for ss_index in range(1, nb_species):
+			for ss_index in range(1, nb_species):				
 				tmp_connected[s_index] = np.concatenate((tmp_connected[s_index], d[s_index, ss_index]), axis = 1)
-
+			
 		#then concatenate the lines vertically
 		connected = tmp_connected[0]
 		for s_index in range(1, nb_species):
 			connected = np.concatenate((connected, tmp_connected[s_index]), axis = 0)
-
+	
 	#same cutoff for everyone:
 	#-------------------------
 	else:
 		connected = dist < float(args.nx_cutoff)
-
+	
 	network = nx.Graph(connected)
-
+	
 	return network
-
 def detect_clusters_density(dist, box_dim):
-
+	
 	#run DBSCAN algorithm
 	dbscan_output = DBSCAN(eps = args.dbscan_dist, metric = 'precomputed', min_samples = args.dbscan_nb).fit(dist)
 
@@ -1698,18 +1652,17 @@ def detect_clusters_density(dist, box_dim):
 			groups.append(map(lambda p:p[0] , tmp_pos))
 
 	return groups
-
 def process_clusters(network, f_index, f_nb):
 
 	global vmd_cluster_size
 	global proteins_ctcts_prot
-
+	
 	clusters = sorted(nx.connected_components(network))
 	nb_clusters = len(clusters)
 	c_counter = 0
-
+	
 	#browse clusters found
-	#=====================
+	#=====================	
 	for cluster in clusters:
 		#display update
 		c_counter += 1
@@ -1720,23 +1673,11 @@ def process_clusters(network, f_index, f_nb):
 		#get size
 		c_size = np.size(cluster)
 
-		print "HERE!!!"
-		print clusters
-
 		#initialise cluster comp and list of pairs treated
 		tmp_comp = [0] * nb_species
 		tmp_pairs_treated = []
-
+		
 		#store size
-
-		# print ' '
-		# print 'f_index is '
-		# print f_index
-		# print ' '
-		# print 'cluster is '
-		# print cluster
-		# print ' '
-
 		proteins_size[f_index, cluster] = c_size
 		if args.cluster_groups_file != "no":
 			proteins_group[f_index, cluster] = groups_sizes_dict[c_size]
@@ -1746,18 +1687,18 @@ def process_clusters(network, f_index, f_nb):
 			#retrieve details of current protein
 			p_s_index = prot_index2sindex[p_index]
 			p_specie = proteins_species[p_s_index]
-
+			
 			p_length = proteins_length[p_specie]
 			p_res_cog = []
 			for r in proteins_sele[p_specie][prot_index2rel[p_index]].residues:
 				p_res_cog.append(r.centroid())
-
+			
 			#update number of each protein specie in the cluster
 			tmp_comp[p_s_index] += 1
 
 			#retrieve neighbours of current protein
 			tmp_neighb = network.neighbors(p_index)
-
+			
 			#browse neighbours of current protein
 			for pp_index in tmp_neighb:
 				if (min(p_index,pp_index),max(p_index,pp_index)) not in tmp_pairs_treated:
@@ -1768,10 +1709,10 @@ def process_clusters(network, f_index, f_nb):
 					pp_res_cog = []
 					for r in proteins_sele[pp_specie][prot_index2rel[pp_index]].residues:
 						pp_res_cog.append(r.centroid())
-
+					
 					#store type of neighbour
 					proteins_nb_neighbours[f_index, p_index, pp_s_index] += 1
-
+				
 					#store residue contacts with neightbours
 					if p_s_index < pp_s_index:
 						dist_p_pp_matrix = MDAnalysis.analysis.distances.distance_array(np.asarray(p_res_cog), np.asarray(pp_res_cog), box_dim)
@@ -1786,26 +1727,26 @@ def process_clusters(network, f_index, f_nb):
 					proteins_ctcts_res_size[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][c_size][dist_p_pp_matrix < args.res_contact] += 1
 					if args.cluster_groups_file != "no":
 						proteins_ctcts_res_group[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][groups_sizes_dict[c_size]][dist_p_pp_matrix < args.res_contact] += 1
-
+					
 					#case: homo interactions (we essentially get twice the sampling for the same price)
 					if p_s_index == pp_s_index:
 						proteins_ctcts_res[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][(dist_p_pp_matrix < args.res_contact).T] += 1
 						proteins_ctcts_res_size[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][c_size][(dist_p_pp_matrix < args.res_contact).T] += 1
 						if args.cluster_groups_file != "no":
 							proteins_ctcts_res_group[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][groups_sizes_dict[c_size]][(dist_p_pp_matrix < args.res_contact).T] += 1
-
+					
 					#store total contacts with neighbour
 					proteins_ctcts_prot[p_index, pp_index] += np.sum(dist_p_pp_matrix < args.res_contact)
-
+					
 					#store same info from the neighbour's perspective
 					proteins_nb_neighbours[f_index, pp_index, p_s_index] += 1
 					proteins_ctcts_prot[pp_index, p_index] += np.sum(dist_p_pp_matrix < args.res_contact)
-
+				
 					#store the fact that the pair p - pp has been treated
 					tmp_pairs_treated.append((min(p_index,pp_index),max(p_index,pp_index)))
 				else:
 					continue
-
+		
 		#store cluster composition
 		tmp_comp = tuple(tmp_comp)
 		if c_size not in clusters_comp.keys():
@@ -1844,14 +1785,14 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 
 	global vmd_cluster_size
 	global proteins_ctcts_prot
-
+	
 	clusters = sorted(nx.connected_components(network))
 	nb_clusters = len(clusters)
 	c_counter = 0
-	tmp_lip_coords = {l: coords_remove_whole(leaflet_sele[l].positions, box_dim) for l in ["lower","upper"]}
+	tmp_lip_coords = {l: coords_remove_whole(leaflet_sele[l].coordinates(), box_dim) for l in ["lower","upper"]}
 	nb_lip_lower = np.shape(tmp_lip_coords["lower"])[0]
 	nb_lip_upper = np.shape(tmp_lip_coords["upper"])[0] #should be global vars
-
+	
 	#browse clusters found
 	#=====================
 	for cluster in clusters:
@@ -1866,14 +1807,14 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 			progress = '\r -processing cluster ' + str(c_counter) + '/' + str(nb_clusters) + '              '
 			sys.stdout.flush()
 			sys.stdout.write(progress)
-
+			
 		#get size
 		c_size = np.size(cluster)
 
 		#create selection for current cluster
-		c_sele = MDAnalysis.core.AtomGroup.AtomGroup([])
+		c_sele = MDAnalysis.core.AtomGroup.AtomGroup([])	
 		p_coords = {}
-		p_coords[cluster[0]] = coords_remove_whole(proteins_sele[prot_index2specie[cluster[0]]][prot_index2rel[cluster[0]]].positions, box_dim)
+		p_coords[cluster[0]] = coords_remove_whole(proteins_sele[prot_index2specie[cluster[0]]][prot_index2rel[cluster[0]]].coordinates(), box_dim)
 		tmp_c_sele_coordinates = p_coords[cluster[0]]
 		for p_index in cluster[1:]:
 			p_coords[p_index] = coords_remove_whole(proteins_sele[prot_index2specie[p_index]][prot_index2rel[p_index]].coordinates(), box_dim)
@@ -1882,28 +1823,28 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 		dist_min_lower = np.min(MDAnalysis.analysis.distances.distance_array(tmp_c_sele_coordinates, tmp_lip_coords["lower"], box_dim), axis = 1)
 		dist_min_upper = np.min(MDAnalysis.analysis.distances.distance_array(tmp_c_sele_coordinates, tmp_lip_coords["upper"], box_dim), axis = 1)
 		dist = dist_min_upper - dist_min_lower
-
+		   
 		#case: interfacial: lower
 		#------------------------
 		if np.size(dist[dist>0]) == np.size(dist):
 			proteins_size[f_index, cluster] = -1
 			if args.cluster_groups_file != "no":
 				proteins_group[f_index, cluster] = -1
-
+		
 		#case: interfacial: upper
 		#------------------------
 		elif np.size(dist[dist>0]) == 0:
 			proteins_size[f_index, cluster] = 99999
 			if args.cluster_groups_file != "no":
 				proteins_group[f_index, cluster] = groups_number + 1
-
+		
 		#case: TM
 		#--------
 		else:
 			#initialise cluster comp and list of pairs treated
 			tmp_comp = [0] * nb_species
 			tmp_pairs_treated = []
-
+			
 			#store size
 			proteins_size[f_index, cluster] = c_size
 			if args.cluster_groups_file != "no":
@@ -1914,12 +1855,12 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 				#retrieve details of current protein
 				p_s_index = prot_index2sindex[p_index]
 				p_specie = proteins_species[p_s_index]
-
+				
 				p_length = proteins_length[p_specie]
 				p_res_cog = []
 				for r in proteins_sele[p_specie][prot_index2rel[p_index]].residues:
 					p_res_cog.append(r.centroid())
-
+				
 				#contacts of residues with phosphate: upper
 				dist_p_upper_matrix = MDAnalysis.analysis.distances.distance_array(np.asarray(p_res_cog), tmp_lip_coords["upper"], box_dim)
 				pop_upper = np.zeros((proteins_length[proteins_species[p_s_index]], nb_lip_upper))
@@ -1940,13 +1881,13 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 				if args.cluster_groups_file != "no":
 					proteins_ctcts_res_lip_group["upper"][p_s_index][groups_sizes_dict[c_size]] += np.sum(pop_upper, axis = 1)
 					proteins_ctcts_res_lip_group["lower"][p_s_index][groups_sizes_dict[c_size]] += np.sum(pop_lower, axis = 1)
-
+				
 				#update number of each protein specie in the cluster
 				tmp_comp[p_s_index] += 1
 
 				#retrieve neighbours of current protein
 				tmp_neighb = network.neighbors(p_index)
-
+				
 				#browse neighbours of current protein
 				for pp_index in tmp_neighb:
 					if (min(p_index,pp_index),max(p_index,pp_index)) not in tmp_pairs_treated:
@@ -1957,10 +1898,10 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 						pp_res_cog = []
 						for r in proteins_sele[pp_specie][prot_index2rel[pp_index]].residues:
 							pp_res_cog.append(r.centroid())
-
+						
 						#store type of neighbour
 						proteins_nb_neighbours[f_index, p_index, pp_s_index] += 1
-
+					
 						#store residue contacts with neightbours
 						if p_s_index < pp_s_index:
 							dist_p_pp_matrix = MDAnalysis.analysis.distances.distance_array(np.asarray(p_res_cog), np.asarray(pp_res_cog), box_dim)
@@ -1975,26 +1916,26 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 						proteins_ctcts_res_size[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][c_size][dist_p_pp_matrix < args.res_contact] += 1
 						if args.cluster_groups_file != "no":
 							proteins_ctcts_res_group[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][groups_sizes_dict[c_size]][dist_p_pp_matrix < args.res_contact] += 1
-
+						
 						#case: homo interactions (we essentially get twice the sampling for the same price)
 						if p_s_index == pp_s_index:
 							proteins_ctcts_res[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][(dist_p_pp_matrix < args.res_contact).T] += 1
 							proteins_ctcts_res_size[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][c_size][(dist_p_pp_matrix < args.res_contact).T] += 1
 							if args.cluster_groups_file != "no":
 								proteins_ctcts_res_group[min(p_s_index, pp_s_index), max(p_s_index, pp_s_index)][groups_sizes_dict[c_size]][(dist_p_pp_matrix < args.res_contact).T] += 1
-
+						
 						#store total contacts with neighbour
 						proteins_ctcts_prot[p_index, pp_index] += np.sum(dist_p_pp_matrix < args.res_contact)
-
+						
 						#store same info from the neighbour's perspective
 						proteins_nb_neighbours[f_index, pp_index, p_s_index] += 1
 						proteins_ctcts_prot[pp_index, p_index] += np.sum(dist_p_pp_matrix < args.res_contact)
-
+					
 						#store the fact that the pair p - pp has been treated
 						tmp_pairs_treated.append((min(p_index,pp_index),max(p_index,pp_index)))
 					else:
 						continue
-
+			
 			#store cluster composition
 			tmp_comp = tuple(tmp_comp)
 			if c_size not in clusters_comp.keys():
@@ -2002,7 +1943,7 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 			if tmp_comp not in clusters_comp[c_size].keys():
 				clusters_comp[c_size][tmp_comp] = 0
 			clusters_comp[c_size][tmp_comp] += 1
-
+	
 	#create annotation line for current frame
 	#========================================
 	if args.buffer_size != -1:
@@ -2027,7 +1968,7 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 				with open(output_xtc_annotate_cluster_group, 'a') as f:
 					f.write(vmd_cluster_group)
 					vmd_cluster_group = ""
-
+	
 	return
 
 #=========================================================================================
@@ -2035,20 +1976,20 @@ def process_clusters_TM(network, f_index, box_dim, f_nb):
 #=========================================================================================
 
 def get_sizes_sampled():
-
+		
 	global clusters_nb
 	global clusters_pc
 	global clusters_interfacial
 	global cluster_sizes_sampled
 	global cluster_sizes_sampled_TM
-
+	
 	#sizes
 	#-----
 	clusters_interfacial = False
-	cluster_sizes_sampled = np.unique(proteins_size)
-	cluster_sizes_sampled_TM = cluster_sizes_sampled[cluster_sizes_sampled != -1]
+	cluster_sizes_sampled = np.unique(proteins_size)	
+	cluster_sizes_sampled_TM = cluster_sizes_sampled[cluster_sizes_sampled != -1]	
 	cluster_sizes_sampled_TM = cluster_sizes_sampled_TM[cluster_sizes_sampled_TM != 99999]
-	cluster_sizes_sampled = sorted(cluster_sizes_sampled)
+	cluster_sizes_sampled = sorted(cluster_sizes_sampled)	
 	cluster_sizes_sampled_TM = sorted(cluster_sizes_sampled_TM)
 	if len(cluster_sizes_sampled_TM) != len(cluster_sizes_sampled):
 		clusters_interfacial = True
@@ -2063,7 +2004,7 @@ def get_sizes_sampled():
 		cluster_groups_sampled_TM = np.unique(proteins_group)
 		cluster_groups_sampled_TM = cluster_groups_sampled_TM[cluster_groups_sampled_TM != -1]
 		cluster_groups_sampled_TM = cluster_groups_sampled_TM[cluster_groups_sampled_TM != groups_number + 1]
-		cluster_groups_sampled_TM = sorted(cluster_groups_sampled_TM)
+		cluster_groups_sampled_TM = sorted(cluster_groups_sampled_TM)		
 		if groups_number in cluster_groups_sampled_TM:
 			groups_gmax = groups_number + 1
 			colours_groups_dict[groups_number] = colour_group_other
@@ -2077,7 +2018,7 @@ def update_color_dict():
 	global colours_sizes_range
 	global colours_sizes_dict
 	global colours_sizes_list
-
+	
 	#colours: sizes (colours from jet colormap)
 	#-------
 	colours_sizes_range = np.zeros(2, int)
@@ -2090,16 +2031,17 @@ def update_color_dict():
 	colours_sizes_dict = {}
 	colours_sizes_list = []
 
-	tmp_cmap = cm.get_cmap('jet')
+	#tmp_cmap = cm.get_cmap('jet')
+	tmp_cmap = cm.get_cmap('coolwarm')
 	colours_sizes_value = tmp_cmap(np.linspace(0, 1, colours_sizes_range[1] - colours_sizes_range[0]+1))
 	for c_index in range(0, colours_sizes_range[1] - colours_sizes_range[0]+1):
 		c_size = colours_sizes_range[0] + c_index
 		colours_sizes_dict[c_size] = colours_sizes_value[c_index]
 		colours_sizes_list.append(colours_sizes_value[c_index])
-
+	
 	#interfacial proteins on the lower leaflet (prepend -> bottom of colour bar)
 	colours_sizes_dict[-1] = colour_leaflet_lower
-
+	
 	#interfacial proteins on the upper leaflet (append -> top of colour bar)
 	colours_sizes_dict[99999] = colour_leaflet_upper
 
@@ -2148,7 +2090,7 @@ def process_oligomers():
 							for n1 in range(0, proteins_multiplicity[s1]):
 								for n2 in range(0, proteins_multiplicity[s2]):
 									proteins_ctcts_res_group_new[s_index1, s_index2][g_index] += proteins_ctcts_res_group[s_index1, s_index2][g_index][n1*proteins_length[s1]:(n1+1)*proteins_length[s1], n2*proteins_length[s2]:(n2+1)*proteins_length[s2]]
-
+							
 				#case: s2 isn't an oligomer
 				else:
 					proteins_ctcts_res_new[s_index1, s_index2] = np.zeros((proteins_length[s1], proteins_length[s2]))
@@ -2166,7 +2108,7 @@ def process_oligomers():
 							for n1 in range(0, proteins_multiplicity[s1]):
 								for n1 in range(0, proteins_multiplicity[s1]):
 									proteins_ctcts_res_group_new[s_index1, s_index2][g_index] += proteins_ctcts_res_group[s_index1, s_index2][g_index][n1*proteins_length[s1]:(n1+1)*proteins_length[s1], :]
-
+		
 		#case: s1 isn't an oligomer
 		#--------------------------
 		else:
@@ -2189,7 +2131,7 @@ def process_oligomers():
 							proteins_ctcts_res_group_new[s_index1, s_index2][g_index] = np.zeros((proteins_length[s1], proteins_length[s2]))
 							for n2 in range(0, proteins_multiplicity[s2]):
 								proteins_ctcts_res_group_new[s_index1, s_index2][g_index] += proteins_ctcts_res_group[s_index1, s_index2][g_index][:, n2*proteins_length[s2]:(n2+1)*proteins_length[s2]]
-
+											
 				#case: s2 isn't an oligomer
 				else:
 					proteins_ctcts_res_new[s_index1, s_index2] = np.zeros((proteins_length[s1], proteins_length[s2]))
@@ -2203,23 +2145,23 @@ def process_oligomers():
 						for g_index in range(0, groups_number):
 							proteins_ctcts_res_group_new[s_index1, s_index2][g_index] = np.zeros((proteins_length[s1], proteins_length[s2]))
 							proteins_ctcts_res_group_new[s_index1, s_index2][g_index] += proteins_ctcts_res_group[s_index1, s_index2][g_index][:, :]
-
+			
 	#update global interaction matrix
 	proteins_ctcts_res = proteins_ctcts_res_new
 	proteins_ctcts_res_size = proteins_ctcts_res_size_new
 	if args.cluster_groups_file != "no":
 		proteins_ctcts_res_group = proteins_ctcts_res_group_new
-
+		
 	return
 def calculate_statistics():
 
 	#nb and corresponding % of each size / group
 	#-------------------------------------------
 	for f_index in range(0,nb_frames_to_process):
-
+		
 		#retrieve cluster status of all proteins for current frame
 		tmp_sizes = list(proteins_size[f_index,:])
-
+		
 		#initialise values for biggest cluster stat (nb,% and size)
 		tmp_max_nb = 0
 		tmp_max_pc = 0
@@ -2229,13 +2171,13 @@ def calculate_statistics():
 		tmp_mostrep_nb = 0
 		tmp_mostrep_pc = 0
 		tmp_mostrep_size = 0
-
+		
 		#store current frame statistics for each size ever sampled
 		for c_size in cluster_sizes_sampled:
 			tmp_nb = tmp_sizes.count(c_size)
 			tmp_pc = tmp_nb / float(nb_proteins) * 100
 			if c_size != -1 and c_size != 99999:					#take into account the cluster size except for interfacial peptides
-				tmp_nb = int(tmp_nb / float(c_size))
+				tmp_nb = int(tmp_nb / float(c_size))				
 			clusters_nb[c_size][f_index] = tmp_nb
 			clusters_pc[c_size][f_index] = tmp_pc
 			if tmp_nb > 0 and c_size > tmp_max_size and c_size != -1 and c_size != 99999:
@@ -2250,16 +2192,16 @@ def calculate_statistics():
 				g_index = groups_sizes_dict[c_size]
 				clusters_nb_groups[g_index][f_index] += tmp_nb
 				clusters_pc_groups[g_index][f_index] += tmp_pc
-
+		
 		#store biggest cluster stats
 		clusters_biggest['nb'][f_index] = tmp_max_nb
-		clusters_biggest['pc'][f_index] = tmp_max_pc
-		clusters_biggest['size'][f_index] = tmp_max_size
+		clusters_biggest['pc'][f_index] = tmp_max_pc		
+		clusters_biggest['size'][f_index] = tmp_max_size			
 
 		#store most rep cluster stats
 		clusters_mostrep['nb'][f_index] = tmp_mostrep_nb
-		clusters_mostrep['pc'][f_index] = tmp_mostrep_pc
-		clusters_mostrep['size'][f_index] = tmp_mostrep_size
+		clusters_mostrep['pc'][f_index] = tmp_mostrep_pc		
+		clusters_mostrep['size'][f_index] = tmp_mostrep_size			
 
 	#contacts between prots (normalised to 1)
 	#----------------------
@@ -2269,22 +2211,22 @@ def calculate_statistics():
 		tmp_sum = np.sum(proteins_ctcts_prot[:,p_index])
 		if tmp_sum > 0:
 			proteins_ctcts_prot[:,p_index] /= float(tmp_sum)
-
+	
 	#contacts between residues (%)
 	#-------------------------
 	#for each pair of proteins normalise the number of contacts between pair of residues by the total number of contacts over all residues
 	for s_index1 in range(0,nb_species):
 		for s_index2 in range(s_index1, nb_species):
-			if np.sum(proteins_ctcts_res[s_index1,s_index2]) > 0:
+			if np.sum(proteins_ctcts_res[s_index1,s_index2]) > 0:	
 				proteins_ctcts_res[s_index1,s_index2] = proteins_ctcts_res[s_index1,s_index2] / float(np.sum(proteins_ctcts_res[s_index1,s_index2])) * 100
 			#by size
 			for c_size in proteins_ctcts_res_size[s_index1,s_index2].keys():
-				if np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size]) > 0:
+				if np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size]) > 0:				
 					proteins_ctcts_res_size[s_index1,s_index2][c_size] = proteins_ctcts_res_size[s_index1,s_index2][c_size] / float(np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size])) * 100
 			#by group
 			if args.cluster_groups_file != "no":
 				for g_index in range(0, groups_number):
-					if np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index]) > 0:
+					if np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index]) > 0:				
 						proteins_ctcts_res_group[s_index1,s_index2][g_index] = proteins_ctcts_res_group[s_index1,s_index2][g_index] / float(np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index])) * 100
 
 	#interaction with lipids (%)
@@ -2301,7 +2243,7 @@ def calculate_statistics():
 			for c_size in proteins_ctcts_res_lip_size["lower"][s_index1].keys():
 				if np.sum(proteins_ctcts_res_lip_size["lower"][s_index1][c_size]) > 0:
 					proteins_ctcts_res_lip_size["lower"][s_index1][c_size] = proteins_ctcts_res_lip_size["lower"][s_index1][c_size] / float(np.sum(proteins_ctcts_res_lip_size["lower"][s_index1][c_size])) * 100
-
+			
 			#by group
 			if args.cluster_groups_file != "no":
 				for g_index in range(0, groups_number):
@@ -2332,7 +2274,7 @@ def calculate_statistics():
 			#average number of contacts
 			proteins_nb_neighbours_avg_time_detail[:, s_index, ss_index] = np.average(proteins_nb_neighbours[:, prot_index2sindex == s_index, ss_index], axis = 1)
 			proteins_nb_neighbours_std_time_detail[:, s_index, ss_index] = np.std(proteins_nb_neighbours[:, prot_index2sindex == s_index, ss_index], axis = 1)
-
+		
 	#composition of clusters
 	#-----------------------
 	#by size
@@ -2353,7 +2295,7 @@ def calculate_statistics():
 						delta = comp[s_index]/float(c_size) - tmp_mean[s_index]
 						tmp_mean[s_index] += delta/float(tmp_n[s_index])
 						tmp_M2[s_index] += delta * (comp[s_index]/float(c_size)  - tmp_mean[s_index])
-
+		
 			for s_index in range(0, nb_species):
 				clusters_comp_avg[c_index, :] = tmp_mean * 100
 				if tmp_n[s_index] > 0:
@@ -2375,16 +2317,16 @@ def calculate_statistics():
 				for comp, nb in clusters_comp[c_size].items():
 					for n in range(0, nb):
 						for s_index in range(0, nb_species):
-							tmp_n[g_index, s_index] += 1
+							tmp_n[g_index, s_index] += 1						
 							delta = comp[s_index]/float(c_size) - tmp_mean[g_index, s_index]
 							tmp_mean[g_index, s_index] += delta/float(tmp_n[g_index, s_index])
 							tmp_M2[g_index, s_index] += delta * (comp[s_index]/float(c_size)  - tmp_mean[g_index, s_index])
-
+			
 		for g_index in cluster_groups_sampled_TM:
 			for s_index in range(0, nb_species):
 				clusters_comp_avg_group[g_index, :] = tmp_mean[g_index, :] * 100
 				if tmp_n[g_index, s_index] > 0:
-					clusters_comp_std_group[g_index, :] = np.sqrt(tmp_M2[g_index, s_index] / float(tmp_n[g_index, s_index])) * 100
+					clusters_comp_std_group[g_index, :] = np.sqrt(tmp_M2[g_index, s_index] / float(tmp_n[g_index, s_index])) * 100		
 
 	return
 
@@ -2394,9 +2336,9 @@ def calculate_statistics():
 
 def write_warning():
 	filename_details=os.getcwd() + '/' + str(args.output_folder) + '/warning.stat'
-	output_stat = open(filename_details, 'w')
+	output_stat = open(filename_details, 'w')		
 	output_stat.write("[protein clustering statistics - written by clustering_prot v" + str(version_nb) + "]\n")
-	output_stat.write("\n")
+	output_stat.write("\n")	
 	#general info
 	output_stat.write("1. Nb of proteins: " + str(nb_proteins) + "\n")
 	output_stat.write("2. Cluster detection Method:\n")
@@ -2413,7 +2355,7 @@ def write_warning():
 	#warning message
 	output_stat.write("Warning: a single cluster size (" + str(cluster_sizes_sampled[0]) + ") was detected throughout the trajectory. Check the -m, -c, -r or -n options (see clustering_prot -h).")
 	output_stat.close()
-
+	
 	return
 
 #proteins neighbours
@@ -2424,11 +2366,11 @@ def graph_proteins_neighbours():
 	if args.xtcfilename == "no":
 		#create filename
 		filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_proteins_neighbours.svg'
-
+	
 		#create figure
 		fig, ax = plt.subplots()
 		fig.suptitle("Average number of neighbours per protein")
-
+		
 		#plot data
 		bar_width = 0.5/float(nb_species)
 		xticks_pos = np.arange(1, 1 + nb_species)
@@ -2437,7 +2379,7 @@ def graph_proteins_neighbours():
 		for s_index in range(0, nb_species):
 			s = proteins_species[s_index]
 			plt.bar(xticks_pos - 0.250 + s_index * bar_width, proteins_nb_neighbours_avg_detail[:, s_index], yerr=proteins_nb_neighbours_std_detail[:, s_index], ecolor='k', width=bar_width, color=proteins_colours[s], label=proteins_names[s])
-
+			
 		#format axes and legend
 		ax.spines['top'].set_visible(False)
 		ax.spines['right'].set_visible(False)
@@ -2457,24 +2399,24 @@ def graph_proteins_neighbours():
 		plt.ylabel('average number of neighbours', fontsize="small")
 		fig.savefig(filename_svg)
 		plt.close()
-
+		
 	#case: xtc file
 	#--------------
 	else:
 		#create filename
 		filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_proteins_neighbours.svg'
-
+	
 		#create figure
 		fig, ax = plt.subplots()
 		fig.suptitle("Average number of neighbours per protein")
-
+		
 		#plot data
 		ax.set_ylim(0, 3)
 		for s_index in range(0, nb_species):
 			s = proteins_species[s_index]
 			plt.plot(frames_time, proteins_nb_neighbours_avg_time_all[:, s_index], color = proteins_colours[s], linewidth = 2.0, label = proteins_names[s])
 			plt.fill_between(frames_time, proteins_nb_neighbours_avg_time_all[:, s_index] - proteins_nb_neighbours_std_time_all[:, s_index], proteins_nb_neighbours_avg_time_all[:, s_index] + proteins_nb_neighbours_std_time_all[:, s_index], color = proteins_colours[s], edgecolor = proteins_colours[s], linewidth = 0, alpha = 0.2)
-
+			
 		#format axes and legend
 		ax.spines['top'].set_visible(False)
 		ax.spines['right'].set_visible(False)
@@ -2502,7 +2444,7 @@ def write_proteins_neighbours():
 		output_stat = open(filename_stat, 'w')
 		output_stat.write("[Number of neighbours of proteins - written by clustering_prot v" + str(version_nb) +"]\n")
 		output_stat.write("\n")
-
+	
 		#average
 		tmp_title1 = "avg"
 		tmp_title2a = "====="
@@ -2527,7 +2469,7 @@ def write_proteins_neighbours():
 			results += "	" + str(round(np.sum(proteins_nb_neighbours_avg_detail[s_index, :]),2))
 		output_stat.write(results + "\n")
 		output_stat.write("\n")
-
+		
 		#std
 		output_stat.write(tmp_title3 + "\n")
 		output_stat.write(tmp_title2a + "\n")
@@ -2595,7 +2537,7 @@ def write_proteins_neighbours():
 					results += "	" + str(round(proteins_nb_neighbours_std_time_detail[f_index, s_index, ss_index], 2))
 			output_xvg.write(results + "\n")
 		output_xvg.close()
-
+	
 	return
 
 #interactions: proteins
@@ -2608,7 +2550,7 @@ def graph_interactions_proteins():
 	#-------------
 	fig, ax = plt.subplots()
 	fig.suptitle("Heatmap of proteins contacts")
-
+		
 	#plot data
 	#---------
 	plt.pcolormesh(proteins_ctcts_prot, cmap = plt.cm.Greens)
@@ -2651,7 +2593,7 @@ def graph_interactions_proteins():
 			tmp_nb += proteins_nb[proteins_species[ss_index]]
 		plt.vlines(tmp_nb, 0, nb_proteins, linestyles = 'dashed')
 		plt.hlines(tmp_nb, 0, nb_proteins, linestyles = 'dashed')
-
+	
 	plt.xlabel('protein index', fontsize="small")
 	plt.ylabel('index of proteins interacted with', fontsize="small")
 	cbar = plt.colorbar()
@@ -2670,7 +2612,7 @@ def graph_interactions_proteins():
 	plt.setp(ax.yaxis.get_majorticklabels(), fontsize="small" )
 	#plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_svg)
-	plt.close()
+	plt.close()	
 	return
 def write_interactions_proteins():
 
@@ -2684,7 +2626,7 @@ def write_interactions_proteins():
 		p_start = 0
 		for ss_index in range(0, s_index):
 			p_start += proteins_nb[proteins_species[ss_index]]
-		p_end = p_start + proteins_nb[proteins_species[s_index]]
+		p_end = p_start + proteins_nb[proteins_species[s_index]]		
 		output_stat.write("#column " + str(int(p_start)) + " to " + str(int(p_end - 1)) + ": " + str(proteins_names[proteins_species[s_index]]) + "\n")
 	for p_index in range(0, nb_proteins):
 		results = str(round(proteins_ctcts_prot[p_index, 0], 2))
@@ -2692,7 +2634,7 @@ def write_interactions_proteins():
 			results += "	" + str(round(proteins_ctcts_prot[p_index, pp_index], 2))
 		output_stat.write(results + "\n")
 	output_stat.close()
-
+	
 	return
 
 #interactions: residues
@@ -2716,9 +2658,9 @@ def graph_interactions_residues_2D():
 				ax_bar_top = plt.axes([0.095, 0.755, 0.6, 0.2])
 				ax_bar_right = plt.axes([0.7, 0.15, 0.2, 0.6])
 				ax_bar_cbar = plt.axes([0.91, 0.15, 0.02, 0.6])
-
+				
 				#plot data
-				#---------
+				#---------				
 				tmp_s1_all = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 1)
 				tmp_s2_all = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 0)
 				tmp_s1s2_plot = proteins_ctcts_res[s_index1,s_index2][tmp_s1_all > args.res_show][:, tmp_s2_all > args.res_show]
@@ -2730,10 +2672,10 @@ def graph_interactions_residues_2D():
 				tmp_s1_max = np.amax(tmp_s1)
 				tmp_s2_max = np.amax(tmp_s2)
 				tmp_s1s2_max = max(tmp_s1_max, tmp_s2_max)
-				scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)
+				scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)				
 				ax_bar_top.bar(np.arange(0, np.shape(tmp_s1s2_plot)[1]), tmp_s2, color = scalar_map.to_rgba(tmp_s2))
 				ax_bar_right.barh(np.arange(0, np.shape(tmp_s1s2_plot)[0]), tmp_s1, color = scalar_map.to_rgba(tmp_s1))
-
+				
 				#set axes limits and labels
 				#--------------------------
 				#heatmap
@@ -2750,7 +2692,7 @@ def graph_interactions_residues_2D():
 				#-----------------------------
 				#heatmap
 				s1_labels = [proteins_residues[s1][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s1_all > args.res_show) if res]
-				s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]
+				s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]				
 				ax_heatmap.set_xticks(np.arange(0.5, len(s2_labels) + 0.5))
 				ax_heatmap.set_yticks(np.arange(0.5, len(s1_labels) + 0.5))
 				ax_heatmap.set_xticklabels(s2_labels, rotation = 90)
@@ -2783,25 +2725,25 @@ def graph_interactions_residues_2D():
 				heatmap_cbar.update_ticks()
 				#bar charts
 				scalar_map.set_array(tmp_s1s2_max)
-				bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)
+				bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)				
 				bar_cbar.set_label('interactions accounted for by residues (%)', size = 9)
 				#bar_cbar.formatter.set_powerlimits((0, 0))
 				bar_cbar.ax.tick_params(labelsize = 7)
 				bar_cbar.update_ticks()
-
+			
 				#save general figure
 				#-----------
 				fig.savefig(filename_svg)
-				plt.close()
+				plt.close()	
 
-
+			
 			#by size
 			for c_size in proteins_ctcts_res_size[s_index1,s_index2].keys():
 				if np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size]) > 0:
 					#create filename
 					#---------------
 					filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_interactions_residues_' + str(proteins_names[s1]) + '-' + str(proteins_names[s2]) + '_2D_size' + str(c_size) + '.svg'
-
+				
 					#create figure
 					#-------------
 					fig = plt.figure(figsize=(8,8))
@@ -2813,9 +2755,9 @@ def graph_interactions_residues_2D():
 					ax_bar_top = plt.axes([0.095, 0.755, 0.6, 0.2])
 					ax_bar_right = plt.axes([0.7, 0.15, 0.2, 0.6])
 					ax_bar_cbar = plt.axes([0.91, 0.15, 0.02, 0.6])
-
+					
 					#plot data
-					#---------
+					#---------				
 					tmp_s1_all = np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size], axis = 1)
 					tmp_s2_all = np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size], axis = 0)
 					tmp_s1s2_plot = proteins_ctcts_res_size[s_index1,s_index2][c_size][tmp_s1_all > args.res_show][:, tmp_s2_all > args.res_show]
@@ -2827,10 +2769,10 @@ def graph_interactions_residues_2D():
 					tmp_s1_max = np.amax(tmp_s1)
 					tmp_s2_max = np.amax(tmp_s2)
 					tmp_s1s2_max = max(tmp_s1_max, tmp_s2_max)
-					scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)
+					scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)				
 					ax_bar_top.bar(np.arange(0, np.shape(tmp_s1s2_plot)[1]), tmp_s2, color = scalar_map.to_rgba(tmp_s2))
 					ax_bar_right.barh(np.arange(0, np.shape(tmp_s1s2_plot)[0]), tmp_s1, color = scalar_map.to_rgba(tmp_s1))
-
+					
 					#set axes limits and labels
 					#--------------------------
 					#heatmap
@@ -2843,12 +2785,12 @@ def graph_interactions_residues_2D():
 					ax_bar_top.set_xlim([0, np.shape(tmp_s1s2_plot)[1]])
 					ax_bar_right.set_xlim([0, tmp_s1_max])
 					ax_bar_right.set_ylim([0, np.shape(tmp_s1s2_plot)[0]])
-
+					
 					#set axes ticks and ticklabels
 					#-----------------------------
 					#heatmap
 					s1_labels = [proteins_residues[s1][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s1_all > args.res_show) if res]
-					s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]
+					s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]				
 					ax_heatmap.set_xticks(np.arange(0.5, len(s2_labels) + 0.5))
 					ax_heatmap.set_yticks(np.arange(0.5, len(s1_labels) + 0.5))
 					ax_heatmap.set_xticklabels(s2_labels, rotation = 90)
@@ -2863,7 +2805,7 @@ def graph_interactions_residues_2D():
 					ax_bar_top.yaxis.set_ticks_position('left')
 					plt.setp(ax_bar_top.xaxis.get_majorticklabels(), fontsize="xx-small" )
 					plt.setp(ax_bar_top.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+	
 					ax_bar_right.yaxis.set_major_formatter(NullFormatter())
 					ax_bar_right.spines['top'].set_visible(False)
 					ax_bar_right.spines['right'].set_visible(False)
@@ -2871,7 +2813,7 @@ def graph_interactions_residues_2D():
 					ax_bar_right.yaxis.set_ticks_position('left')
 					plt.setp(ax_bar_right.xaxis.get_majorticklabels(), fontsize="xx-small" )
 					plt.setp(ax_bar_right.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+					
 					#colour bar
 					#----------
 					#heatmap
@@ -2882,17 +2824,17 @@ def graph_interactions_residues_2D():
 					heatmap_cbar.update_ticks()
 					#bar charts
 					scalar_map.set_array(tmp_s1s2_max)
-					bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)
+					bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)				
 					bar_cbar.set_label('interactions accounted for by residues (%)', size = 9)
 					#bar_cbar.formatter.set_powerlimits((0, 0))
 					bar_cbar.ax.tick_params(labelsize = 7)
 					bar_cbar.update_ticks()
-
+				
 					#save figure
 					#-----------
 					fig.savefig(filename_svg)
-					plt.close()
-
+					plt.close()	
+	
 			#by group
 			if args.cluster_groups_file != "no":
 				for g_index in range(0, groups_number):
@@ -2900,7 +2842,7 @@ def graph_interactions_residues_2D():
 						#create filename
 						#---------------
 						filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_interactions_residues_' + str(proteins_names[s1]) + '-' + str(proteins_names[s2]) + '_2D_g' + groups_labels[g_index] + '.svg'
-
+					
 						#create figure
 						#-------------
 						fig = plt.figure(figsize=(8,8))
@@ -2912,9 +2854,9 @@ def graph_interactions_residues_2D():
 						ax_bar_top = plt.axes([0.095, 0.755, 0.6, 0.2])
 						ax_bar_right = plt.axes([0.7, 0.15, 0.2, 0.6])
 						ax_bar_cbar = plt.axes([0.91, 0.15, 0.02, 0.6])
-
+						
 						#plot data
-						#---------
+						#---------				
 						tmp_s1_all = np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index], axis = 1)
 						tmp_s2_all = np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index], axis = 0)
 						tmp_s1s2_plot = proteins_ctcts_res_group[s_index1,s_index2][g_index][tmp_s1_all > args.res_show][:, tmp_s2_all > args.res_show]
@@ -2926,10 +2868,10 @@ def graph_interactions_residues_2D():
 						tmp_s1_max = np.amax(tmp_s1)
 						tmp_s2_max = np.amax(tmp_s2)
 						tmp_s1s2_max = max(tmp_s1_max, tmp_s2_max)
-						scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)
+						scalar_map = cm.ScalarMappable(norm = mcolors.Normalize(vmin = 0, vmax = tmp_s1s2_max), cmap = plt.cm.Reds)				
 						ax_bar_top.bar(np.arange(0, np.shape(tmp_s1s2_plot)[1]), tmp_s2, color = scalar_map.to_rgba(tmp_s2))
 						ax_bar_right.barh(np.arange(0, np.shape(tmp_s1s2_plot)[0]), tmp_s1, color = scalar_map.to_rgba(tmp_s1))
-
+						
 						#set axes limits and labels
 						#--------------------------
 						#heatmap
@@ -2942,12 +2884,12 @@ def graph_interactions_residues_2D():
 						ax_bar_top.set_xlim([0, np.shape(tmp_s1s2_plot)[1]])
 						ax_bar_right.set_xlim([0, tmp_s1_max])
 						ax_bar_right.set_ylim([0, np.shape(tmp_s1s2_plot)[0]])
-
+						
 						#set axes ticks and ticklabels
 						#-----------------------------
 						#heatmap
 						s1_labels = [proteins_residues[s1][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s1_all > args.res_show) if res]
-						s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]
+						s2_labels = [proteins_residues[s2][i] + str(np.arange(1,proteins_length[s1]+1)[i]) for i, res in enumerate(tmp_s2_all > args.res_show) if res]				
 						ax_heatmap.set_xticks(np.arange(0.5, len(s2_labels) + 0.5))
 						ax_heatmap.set_yticks(np.arange(0.5, len(s1_labels) + 0.5))
 						ax_heatmap.set_xticklabels(s2_labels, rotation = 90)
@@ -2962,7 +2904,7 @@ def graph_interactions_residues_2D():
 						ax_bar_top.yaxis.set_ticks_position('left')
 						plt.setp(ax_bar_top.xaxis.get_majorticklabels(), fontsize="xx-small" )
 						plt.setp(ax_bar_top.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+		
 						ax_bar_right.yaxis.set_major_formatter(NullFormatter())
 						ax_bar_right.spines['top'].set_visible(False)
 						ax_bar_right.spines['right'].set_visible(False)
@@ -2970,7 +2912,7 @@ def graph_interactions_residues_2D():
 						ax_bar_right.yaxis.set_ticks_position('left')
 						plt.setp(ax_bar_right.xaxis.get_majorticklabels(), fontsize="xx-small" )
 						plt.setp(ax_bar_right.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+						
 						#colour bar
 						#----------
 						#heatmap
@@ -2981,16 +2923,16 @@ def graph_interactions_residues_2D():
 						heatmap_cbar.update_ticks()
 						#bar charts
 						scalar_map.set_array(tmp_s1s2_max)
-						bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)
+						bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)				
 						bar_cbar.set_label('interactions accounted for by residues (%)', size = 9)
 						#bar_cbar.formatter.set_powerlimits((0, 0))
 						bar_cbar.ax.tick_params(labelsize = 7)
 						bar_cbar.update_ticks()
-
+					
 						#save figure
 						#-----------
 						fig.savefig(filename_svg)
-						plt.close()
+						plt.close()	
 
 	return
 
@@ -3000,17 +2942,17 @@ def graph_interactions_residues_1D():
 		s1 = proteins_species[s_index1]
 		for s_index2 in range(s_index1, nb_species):
 			s2 = proteins_species[s_index2]
-			if np.sum(proteins_ctcts_res[s_index1,s_index2]) > 0:
-
+			if np.sum(proteins_ctcts_res[s_index1,s_index2]) > 0:			
+				
 				#all residues
 				#------------
 				#create filename
 				filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_interactions_residues_' + str(proteins_names[s1]) + '-' + str(proteins_names[s2]) + '_1D_all.svg'
-
+			
 				#create figure
 				fig, ax = plt.subplots()
 				fig.suptitle("% of interactions between " + str(proteins_names[s1]) + " and " + str(proteins_names[s2]))
-
+				
 				#plot data
 				tmp_s1 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 1)
 				tmp_s2 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 0)
@@ -3033,7 +2975,7 @@ def graph_interactions_residues_1D():
 					tmp_s2.sort()
 					tmp_s2 = tmp_s2[::-1]
 					ax2.bar(np.arange(0, proteins_length[s2]), tmp_s2, color=proteins_colours[s2], edgecolor = "none")
-
+				
 				#set axes limits and labels
 				ax1.set_xlim([0, proteins_length[s1]])
 				ax1.set_ylim([0, tmp_s1s2_max])
@@ -3046,14 +2988,14 @@ def graph_interactions_residues_1D():
 					ax2.set_xlabel(proteins_names[s2] + " residues", fontsize="small")
 					ax2.set_ylabel("% of interactions", fontsize="small")
 					ax2.hlines(args.res_show, 0, proteins_length[s2], linestyles = 'dashed')
-
+				
 				#set axes ticks and ticklabels
 				ax1.xaxis.set_major_formatter(NullFormatter())
 				ax1.spines['top'].set_visible(False)
 				ax1.spines['right'].set_visible(False)
 				ax1.xaxis.set_ticks_position('bottom')
 				ax1.yaxis.set_ticks_position('left')
-				plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="xx-small" )
+				plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="xx-small" )				
 				if s1 != s2:
 					ax2.xaxis.set_major_formatter(NullFormatter())
 					ax2.spines['top'].set_visible(False)
@@ -3061,20 +3003,20 @@ def graph_interactions_residues_1D():
 					ax2.xaxis.set_ticks_position('bottom')
 					ax2.yaxis.set_ticks_position('left')
 					plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+				
 				#save figure
 				fig.savefig(filename_svg)
-				plt.close()
+				plt.close()	
 
 				#residues involved in interactions only
 				#--------------------------------------
 				#create filename
 				filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_interactions_residues_' + str(proteins_names[s1]) + '-' + str(proteins_names[s2]) + '_1D.svg'
-
+			
 				#create figure
 				fig, ax = plt.subplots()
 				fig.suptitle("% of interactions between " + str(proteins_names[s1]) + " and " + str(proteins_names[s2]))
-
+				
 				#plot data
 				tmp_s1 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 1)
 				tmp_s2 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 0)
@@ -3100,7 +3042,7 @@ def graph_interactions_residues_1D():
 					tmp_s2 = tmp_s2[::-1]
 					tmp_s2 = tmp_s2[tmp_s2 > 0]
 					ax2.bar(np.arange(0, len(tmp_s2)), tmp_s2, color=proteins_colours[s2], edgecolor = "none")
-
+				
 				#set axes limits and labels
 				ax1.set_xlim([0, len(tmp_s1)])
 				ax1.set_ylim([0, tmp_s1s2_max])
@@ -3113,14 +3055,14 @@ def graph_interactions_residues_1D():
 					ax2.set_xlabel(proteins_names[s2] + " residues", fontsize="small")
 					ax2.set_ylabel("% of interactions", fontsize="small")
 					ax2.hlines(args.res_show, 0, len(tmp_s2), linestyles = 'dashed')
-
+				
 				#set axes ticks and ticklabels
 				ax1.xaxis.set_major_formatter(NullFormatter())
 				ax1.spines['top'].set_visible(False)
 				ax1.spines['right'].set_visible(False)
 				ax1.xaxis.set_ticks_position('bottom')
 				ax1.yaxis.set_ticks_position('left')
-				plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="xx-small" )
+				plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="xx-small" )				
 				if s1 != s2:
 					ax2.xaxis.set_major_formatter(NullFormatter())
 					ax2.spines['top'].set_visible(False)
@@ -3128,10 +3070,10 @@ def graph_interactions_residues_1D():
 					ax2.xaxis.set_ticks_position('bottom')
 					ax2.yaxis.set_ticks_position('left')
 					plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="xx-small" )
-
+				
 				#save figure
 				fig.savefig(filename_svg)
-				plt.close()
+				plt.close()	
 
 	return
 
@@ -3233,9 +3175,9 @@ def graph_clusters_comp():
 	#-------------
 	fig, ax = plt.subplots()
 	fig.suptitle("Average clusters composition")
-
+	
 	#plot data
-	#---------
+	#---------				
 	bar_width = 0.5/float(nb_species)
 	xticks_pos = np.arange(1, 1 + len(cluster_sizes_sampled))
 	ax.set_xlim(0.5, 0.5 + len(cluster_sizes_sampled))
@@ -3243,7 +3185,7 @@ def graph_clusters_comp():
 	for s_index in range(0, nb_species):
 		s = proteins_species[s_index]
 		plt.bar(xticks_pos - 0.250 + s_index * bar_width, clusters_comp_avg[:, s_index], yerr=clusters_comp_std[:, s_index], ecolor='k', width=bar_width, color=proteins_colours[s], label=proteins_names[s])
-
+		
 	#format axes and legend
 	#----------------------
 	ax.spines['top'].set_visible(False)
@@ -3261,29 +3203,29 @@ def graph_clusters_comp():
 	plt.ylabel('clusters composition (species %)', fontsize="small")
 	fig.savefig(filename_svg)
 	plt.close()
-
+	
 	#by groups
 	#=========
 	if args.cluster_groups_file != "no":
 		#create filename
 		#---------------
 		filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/3_clusters_compositions/3_clusters_compositions_by_groups.svg'
-
+	
 		#create figure
 		#-------------
 		fig, ax = plt.subplots()
 		fig.suptitle("Average clusters composition")
-
+		
 		#plot data
-		#---------
+		#---------				
 		bar_width = 0.5/float(nb_species)
-		xticks_pos = np.arange(1, 1 + groups_gmax)
+		xticks_pos = np.arange(1, 1 + groups_gmax)		
 		ax.set_xlim(0.5, 0.5 + groups_gmax)
 		ax.set_ylim(0, 100)
 		for s_index in range(0, nb_species):
 			s = proteins_species[s_index]
 			plt.bar(xticks_pos - 0.250 + s_index * bar_width, clusters_comp_avg_group[:, s_index], yerr=clusters_comp_std_group[:, s_index], ecolor='k', width=bar_width, color=proteins_colours[s], label=proteins_names[s])
-
+		
 		#format axes and legend
 		#----------------------
 		ax.spines['top'].set_visible(False)
@@ -3304,7 +3246,7 @@ def graph_clusters_comp():
 		plt.ylabel('clusters composition (species %)', fontsize="small")
 		fig.savefig(filename_svg)
 		plt.close()
-
+		
 	return
 def write_clusters_comp():
 
@@ -3375,9 +3317,9 @@ def write_clusters_comp():
 			tmp_results[s_index] += "	" + str(round(clusters_comp_std[c_index, s_index],2))
 	for s_index in range(0, nb_species):
 		output_stat.write(tmp_results[s_index] + "\n")
-	output_stat.write("\n")
+	output_stat.write("\n")	
 	output_stat.close()
-
+	
 	#by groups
 	#=========
 	if args.cluster_groups_file != "no":
@@ -3385,7 +3327,7 @@ def write_clusters_comp():
 		output_stat = open(filename_stat, 'w')
 		output_stat.write("[Cluster composition statistics - written by clustering_prot v" + str(version_nb) +"]\n")
 		output_stat.write("\n")
-
+	
 		#sampling
 		output_stat.write("sampling:\n")
 		output_stat.write("*********\n")
@@ -3403,7 +3345,7 @@ def write_clusters_comp():
 		output_stat.write(results + "\n")
 		output_stat.write("\n")
 		output_stat.write("\n")
-
+	
 		#average
 		output_stat.write("composition:\n")
 		output_stat.write("************\n")
@@ -3430,7 +3372,7 @@ def write_clusters_comp():
 		output_stat.write(tmp_title2b + "\n")
 		output_stat.write(tmp_results["total"] + "\n")
 		output_stat.write("\n")
-
+	
 		#std dev
 		output_stat.write("\n")
 		output_stat.write(tmp_title3 + "\n")
@@ -3441,7 +3383,7 @@ def write_clusters_comp():
 				tmp_results[s_index] += "	" + str(round(clusters_comp_std_group[g_index, s_index],2))
 		for s_index in range(0, nb_species):
 			output_stat.write(tmp_results[s_index] + "\n")
-		output_stat.write("\n")
+		output_stat.write("\n")	
 		output_stat.close()
 
 	return
@@ -3553,7 +3495,7 @@ def write_xvg_sizes_TM():
 			results += "	" + str(round(clusters_nb[c_size][f_index],2))
 		output_xvg.write(results + "\n")
 	output_xvg.close()
-
+	
 	return
 def write_xvg_sizes_interfacial():
 
@@ -3594,7 +3536,7 @@ def write_xvg_sizes_interfacial():
 		results = str(frames_time[f_index]) + "	" + str(round(clusters_pc[-1][f_index],2)) + "	" + str(round(clusters_pc[99999][f_index],2)) + "	" + str(round(clusters_nb[-1][f_index],2)) + "	" + str(round(clusters_nb[99999][f_index],2))
 		output_xvg.write(results + "\n")
 	output_xvg.close()
-
+	
 	return
 def graph_xvg_biggest():
 	#create filenames
@@ -3647,7 +3589,7 @@ def graph_xvg_biggest():
 	plt.setp(ax1.xaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax2.xaxis.get_majorticklabels(), fontsize="small" )
-	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )
+	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )	
 	plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_png)
 	fig.savefig(filename_svg)
@@ -3704,14 +3646,14 @@ def graph_xvg_mostrep():
 	plt.setp(ax1.xaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax2.xaxis.get_majorticklabels(), fontsize="small" )
-	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )
+	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )	
 	plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_png)
 	fig.savefig(filename_svg)
 	plt.close()
 	return
 def graph_xvg_sizes_TM():
-
+	
 	#create filenames
 	#----------------
 	filename_png = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/4_2_plots_1D/png/4_2_clusterprot_1D_TM.png'
@@ -3720,8 +3662,8 @@ def graph_xvg_sizes_TM():
 	#create figure
 	#-------------
 	fig = plt.figure(figsize=(8, 6.2))
-	fig.suptitle("Evolution of proteins distribution")
-
+	fig.suptitle("Evolution of Protein Distribution")
+		
 	#plot data: %
 	#------------
 	ax1 = fig.add_subplot(211)
@@ -3732,8 +3674,8 @@ def graph_xvg_sizes_TM():
 	fontP.set_size("small")
 	ax1.legend(prop=fontP)
 	plt.title("%", fontsize="small")
-	plt.xlabel('time (ns)', fontsize="small")
-	plt.ylabel('% of proteins', fontsize="small")
+	plt.xlabel('Time / ns', fontsize="small")
+	plt.ylabel('% of Proteins', fontsize="small")
 
 	#plot data: nb
 	#-------------
@@ -3744,15 +3686,15 @@ def graph_xvg_sizes_TM():
 			p_lower[c_size] = plt.plot(frames_time, clusters_nb[c_size], color = colours_sizes_dict[c_size], linewidth = 2.0, label=str(int(c_size)))
 	fontP.set_size("small")
 	ax2.legend(prop=fontP)
-	plt.title("nb", fontsize="small")
-	plt.xlabel('time (ns)', fontsize="small")
-	plt.ylabel('nb of clusters', fontsize="small")
+	plt.title("No.", fontsize="small")
+	plt.xlabel('Time / ns', fontsize="small")
+	plt.ylabel('No. of Clusters', fontsize="small")
 
 	#save figure
 	#-----------
-	ax1.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1])
+	ax1.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1]) 
 	ax1.set_ylim(0, 100)
-	ax2.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1])
+	ax2.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1]) 
 	ax2.set_ylim(0, np.max(clusters_nb.values())+1)
 	ax1.spines['top'].set_visible(False)
 	ax1.spines['right'].set_visible(False)
@@ -3769,7 +3711,7 @@ def graph_xvg_sizes_TM():
 	plt.setp(ax1.xaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax2.xaxis.get_majorticklabels(), fontsize="small" )
-	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )
+	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )	
 	plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_png)
 	fig.savefig(filename_svg)
@@ -3777,7 +3719,7 @@ def graph_xvg_sizes_TM():
 
 	return
 def graph_xvg_sizes_interfacial():
-
+	
 	#create filenames
 	#----------------
 	filename_png = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/4_2_plots_1D/png/4_2_clusterprot_1D_interfacial.png'
@@ -3787,7 +3729,7 @@ def graph_xvg_sizes_interfacial():
 	#-------------
 	fig = plt.figure(figsize=(8, 6.2))
 	fig.suptitle("Evolution of proteins distribution")
-
+		
 	#plot data: %
 	#------------
 	ax1 = fig.add_subplot(211)
@@ -3814,9 +3756,9 @@ def graph_xvg_sizes_interfacial():
 
 	#save figure
 	#-----------
-	ax1.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1])
+	ax1.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1]) 
 	ax1.set_ylim(0, 100)
-	ax2.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1])
+	ax2.set_xlim(frames_time[0],frames_time[nb_frames_to_process-1]) 
 	ax2.set_ylim(0, np.max(clusters_nb.values())+1)
 	ax1.spines['top'].set_visible(False)
 	ax1.spines['right'].set_visible(False)
@@ -3833,7 +3775,7 @@ def graph_xvg_sizes_interfacial():
 	plt.setp(ax1.xaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax2.xaxis.get_majorticklabels(), fontsize="small" )
-	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )
+	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )	
 	plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_png)
 	fig.savefig(filename_svg)
@@ -3855,7 +3797,7 @@ def graph_aggregation_2D_sizes():
 	if args.cutoff_leaflet != "no" and clusters_interfacial:
 		color_map.set_under(colour_leaflet_lower)
 		color_map.set_over(colour_leaflet_upper)
-
+	
 	#determine nb of colours and their boundaries
 	bounds = []
 	cb_ticks_lab = []
@@ -3866,7 +3808,7 @@ def graph_aggregation_2D_sizes():
 		cb_ticks_lab.append(str(c))
 	if args.cutoff_leaflet != "no" and clusters_interfacial:
 		cb_ticks_lab.append("upper")
-	bounds.append(colours_sizes_range[1]+0.5)
+	bounds.append(colours_sizes_range[1]+0.5)	
 	norm = mpl.colors.BoundaryNorm(bounds, color_map.N)
 
     # reorder rows in proteins_size by cluster_size so that clustering can be seen more easily (option: -order)
@@ -3891,7 +3833,7 @@ def graph_aggregation_2D_sizes():
 		proteins_size_ordered = proteins_size.T
 	#create figure ('norm' requires at least 2 elements to work)
 	fig = plt.figure(figsize=(9, 8))
-	ax_plot = fig.add_axes([0.10, 0.1, 0.75, 0.77])
+	ax_plot = fig.add_axes([0.10, 0.1, 0.75, 0.77])	
 	#ax_plot.pcolormesh(proteins_size.T, cmap = color_map, norm = norm)
 	ax_plot.matshow(proteins_size_ordered, origin = 'lower', interpolation = 'nearest', cmap = color_map, aspect = 'auto', norm = norm)
 
@@ -3904,7 +3846,7 @@ def graph_aggregation_2D_sizes():
 		extend_val = "neither"
 		boundaries_val = bounds
 	cb = mpl.colorbar.ColorbarBase(ax_cbar, cmap = color_map, norm = norm, boundaries = boundaries_val, extend = extend_val)
-
+	
 	#position and label color bar ticks
 	cb_ticks_pos = []
 	if args.cutoff_leaflet != "no" and clusters_interfacial:
@@ -3917,7 +3859,7 @@ def graph_aggregation_2D_sizes():
 	cb.set_ticklabels(cb_ticks_lab)
 	for t in cb.ax.get_yticklabels():
 		t.set_fontsize('xx-small')
-
+	
 	#label area of plots - only relevant if proteins have not been reordered, or reordered respecting species type
 	if args.order in ["none", "byspecies"]:
 		for s_index in range(0, nb_species):
@@ -3931,7 +3873,7 @@ def graph_aggregation_2D_sizes():
 			text.set_alpha(0.3)
 
 	#format axes
-	ax_plot.xaxis.set_label_position('bottom')
+	ax_plot.xaxis.set_label_position('bottom') 
 	ax_plot.xaxis.set_ticks_position('bottom')
 	ax_plot.set_xlabel("time (ns)", fontsize = "medium")
 	plt.setp(ax_plot.xaxis.get_majorticklabels(), fontsize = "small" )
@@ -3947,19 +3889,19 @@ def graph_aggregation_2D_sizes():
 	ax_plot.yaxis.set_ticks_position('left')
 	#ax_plot.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x,p: '{0:0g}'.format(x+1)))	#increase the index by 1 to get 1-based numbers
 	ax_plot.set_ylabel("protein #", fontsize = "medium")
-	ax_plot.yaxis.set_major_locator(MaxNLocator(prune = 'lower'))
+	ax_plot.yaxis.set_major_locator(MaxNLocator(prune = 'lower'))	
 	plt.setp(ax_plot.yaxis.get_majorticklabels(), fontsize = "small" )
 	ax_plot.set_title("Evolution of the cluster size in which proteins are involved", fontsize = "medium")
 	ax_cbar.set_ylabel('cluster size', fontsize = 'small')
-
+	
 	#save figure
 	fig.savefig(filename_png, transparent = True)
 	fig.savefig(filename_svg, transparent = True)
 	plt.close()
-
+			
 	return
 def write_aggregation_2D_sizes():
-
+	
 	#create filenames
 	filename_stat = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/4_1_plots_2D/xvg/4_1_clusterprot_2D.stat'
 	output_stat = open(filename_stat, 'w')
@@ -3967,13 +3909,13 @@ def write_aggregation_2D_sizes():
 	output_stat.write("#This data corresponds to the size of the TM cluster proteins are involved in.\n")
 	if args.cutoff_leaflet != "no":
 		output_stat.write("#-1 correponds to an interfacial state on the lower leaflet\n")
-		output_stat.write("#99999 correponds to an interfacial state on the upper leaflet\n")
+		output_stat.write("#99999 correponds to an interfacial state on the upper leaflet\n")	
 	output_stat.write("# -> column 0 corresponds to the simulation time in ns.\n")
 	for s_index in range(0, nb_species):
 		p_start = 1
 		for ss_index in range(0, s_index):
 			p_start += proteins_nb[proteins_species[ss_index]]
-		p_end = p_start + proteins_nb[proteins_species[s_index]]
+		p_end = p_start + proteins_nb[proteins_species[s_index]]		
 		output_stat.write("# -> column " + str(int(p_start)) + " to " + str(int(p_end - 1)) + " correspond to " + str(proteins_names[proteins_species[s_index]]) + " proteins\n")
 
 	# order the proteins in protein_size according to cluster size (as in the above func: graph_aggregation_2D_sizes)
@@ -4009,7 +3951,7 @@ def write_aggregation_2D_sizes():
 	return
 
 #evolution clustering: groups
-def write_xvg_groups():
+def write_xvg_groups():													
 
 	filename_txt = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/5_2_plots_1D/xvg/5_2_clusterprot_1D.txt'
 	filename_xvg = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/5_2_plots_1D/xvg/5_2_clusterprot_1D.xvg'
@@ -4034,14 +3976,14 @@ def write_xvg_groups():
 	output_xvg.write("@ legend box on\n")
 	output_xvg.write("@ legend loctype view\n")
 	output_xvg.write("@ legend 0.98, 0.8\n")
-	output_xvg.write("@ legend length " + str(len(cluster_groups_sampled_TM)*2) + "\n")
+	output_xvg.write("@ legend length " + str(len(cluster_groups_sampled_TM)*2) + "\n")	
 	#write caption: %
 	for c_index in range(0,len(cluster_groups_sampled_TM)):
-		g_index = cluster_groups_sampled_TM[c_index]
+		g_index = cluster_groups_sampled_TM[c_index]		
 		output_xvg.write("@ s" + str(c_index) + " legend \"% " + str(groups_labels[g_index]) + "\"\n")
 		output_txt.write("1_2_clusterprot_1D.xvg," + str(c_index+1) + ",% " + str(groups_labels[g_index]) + "," + mcolors.rgb2hex(mcolorconv.to_rgb(colours_groups_dict[g_index])) + "\n")
 	#write caption: nb
-	for c_index in range(0,len(cluster_groups_sampled_TM)):
+	for c_index in range(0,len(cluster_groups_sampled_TM)):		
 		g_index = cluster_groups_sampled_TM[c_index]
 		output_xvg.write("@ s" + str(len(cluster_groups_sampled_TM) + c_index) + " legend \"nb " + str(groups_labels[g_index]) + "\"\n")
 		output_txt.write("1_2_clusterprot_1D.xvg," + str(len(cluster_groups_sampled_TM) + c_index + 1) + ",nb " + str(groups_labels[g_index]) + "," + mcolors.rgb2hex(mcolorconv.to_rgb(colours_groups_dict[g_index])) + "\n")
@@ -4055,10 +3997,10 @@ def write_xvg_groups():
 			results+="	" + str(round(clusters_nb_groups[g_index][f_index],2))
 		output_xvg.write(results + "\n")
 	output_xvg.close()
-
+	
 	return
-def graph_xvg_groups():
-
+def graph_xvg_groups():													
+	
 	#create filenames
 	#----------------
 	filename_png = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/5_2_plots_1D/png/5_2_clusterprot_1D.png'
@@ -4068,7 +4010,7 @@ def graph_xvg_groups():
 	#-------------
 	fig = plt.figure(figsize=(8, 6.2))
 	fig.suptitle("Evolution of proteins distribution")
-
+		
 	#plot data: %
 	#------------
 	ax1 = fig.add_subplot(211)
@@ -4112,7 +4054,7 @@ def graph_xvg_groups():
 	plt.setp(ax1.xaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax1.yaxis.get_majorticklabels(), fontsize="small" )
 	plt.setp(ax2.xaxis.get_majorticklabels(), fontsize="small" )
-	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )
+	plt.setp(ax2.yaxis.get_majorticklabels(), fontsize="small" )	
 	plt.subplots_adjust(top=0.9, bottom=0.07, hspace=0.37, left=0.09, right=0.96)
 	fig.savefig(filename_png)
 	fig.savefig(filename_svg)
@@ -4120,7 +4062,7 @@ def graph_xvg_groups():
 
 	return
 def graph_aggregation_2D_groups():
-
+	
 	#create filenames
 	filename_png=os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/5_1_plots_2D/png/5_1_clusterprot_2D.png'
 	filename_svg=os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/5_1_plots_2D/5_1_clusterprot_2D.svg'
@@ -4137,7 +4079,7 @@ def graph_aggregation_2D_groups():
 	bounds = []
 	cb_ticks_lab = []
 	if args.cutoff_leaflet != "no" and clusters_interfacial:
-		cb_ticks_lab.append("lower")
+		cb_ticks_lab.append("lower")	
 	for g_index in sorted(colours_groups_dict.iterkeys()):
 		bounds.append(g_index-0.5)
 		if g_index == groups_number:
@@ -4150,10 +4092,10 @@ def graph_aggregation_2D_groups():
 		cb_ticks_lab.append("upper")
 	bounds.append(sorted(colours_groups_dict.iterkeys())[-1]+0.5)
 	norm = mpl.colors.BoundaryNorm(bounds, color_map.N)
-
+					
 	#create figure ('norm' requires at least 2 elements to work)
 	fig = plt.figure(figsize=(9, 8))
-	ax_plot = fig.add_axes([0.10, 0.1, 0.75, 0.77])
+	ax_plot = fig.add_axes([0.10, 0.1, 0.75, 0.77])	
 	ax_plot.matshow(proteins_group.T, origin = 'lower', interpolation = 'nearest', cmap = color_map, aspect = 'auto', norm = norm)
 
 	#create color bar
@@ -4178,7 +4120,7 @@ def graph_aggregation_2D_groups():
 	cb.set_ticklabels(cb_ticks_lab)
 	for t in cb.ax.get_yticklabels():
 		t.set_fontsize('xx-small')
-
+				
 	#label area of plots
 	for s_index in range(0, nb_species):
 		s = proteins_species[s_index]
@@ -4191,7 +4133,7 @@ def graph_aggregation_2D_groups():
 		text.set_alpha(0.3)
 
 	#format axes
-	ax_plot.xaxis.set_label_position('bottom')
+	ax_plot.xaxis.set_label_position('bottom') 
 	ax_plot.xaxis.set_ticks_position('bottom')
 	ax_plot.set_xlabel("time (ns)", fontsize = "medium")
 	plt.setp(ax_plot.xaxis.get_majorticklabels(), fontsize = "small" )
@@ -4203,20 +4145,20 @@ def graph_aggregation_2D_groups():
 		if f_index > nb_frames_to_process-1:
 			f_index = nb_frames_to_process-1
 		xlabel[tick_index] = int(frames_time[f_index])
-	ax_plot.set_xticklabels(xlabel)
+	ax_plot.set_xticklabels(xlabel)	
 	ax_plot.yaxis.set_ticks_position('left')
 	#ax_plot.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x,p: '{0:0g}'.format(x+1)))	#increase the index by 1 to get 1-based numbers
 	ax_plot.set_ylabel("protein #", fontsize = "medium")
-	ax_plot.yaxis.set_major_locator(MaxNLocator(prune = 'lower'))
+	ax_plot.yaxis.set_major_locator(MaxNLocator(prune = 'lower'))	
 	plt.setp(ax_plot.yaxis.get_majorticklabels(), fontsize = "small" )
 	ax_plot.set_title("Evolution of the cluster size in which proteins are involved", fontsize = "medium")
 	ax_cbar.set_ylabel('cluster size', fontsize = 'small')
-
+	
 	#save figure
 	fig.savefig(filename_png, transparent = True)
 	fig.savefig(filename_svg, transparent = True)
 	plt.close()
-
+			
 	return
 def write_aggregation_2D_groups():
 
@@ -4233,13 +4175,13 @@ def write_aggregation_2D_groups():
 			output_stat.write(str(g_index) + " = " + str(groups_boundaries[g_index][0]) + "-" + str(groups_boundaries[g_index][1]) + "\n")
 	if args.cutoff_leaflet != "no":
 		output_stat.write("#-1 correponds to an interfacial state on the lower leaflet\n")
-		output_stat.write("#" + str(groups_number + 1) + " correponds to an interfacial state on the upper leaflet\n")
+		output_stat.write("#" + str(groups_number + 1) + " correponds to an interfacial state on the upper leaflet\n")	
 	output_stat.write("# -> column 0 corresponds to the simulation time in ns.\n")
 	for s_index in range(0, nb_species):
 		p_start = 1
 		for ss_index in range(0, s_index):
 			p_start += proteins_nb[proteins_species[ss_index]]
-		p_end = p_start + proteins_nb[proteins_species[s_index]]
+		p_end = p_start + proteins_nb[proteins_species[s_index]]		
 		output_stat.write("# -> column " + str(int(p_start)) + " to " + str(int(p_end - 1)) + " correspond to " + str(proteins_names[proteins_species[s_index]]) + " proteins\n")
 
 	#write results
@@ -4262,11 +4204,11 @@ def write_frame_stat(f_nb, f_index, f_t):
 		#-----
 		#create file
 		if args.xtcfilename == "no":
-			filename_details = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clustprot_sizes_sampled.stat'
+			filename_details = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clustprot_sizes_sampled.stat'		
 		else:
-			filename_details = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clustprot_sizes_sampled.stat'
-		output_stat = open(filename_details, 'w')
-
+			filename_details = os.getcwd() + '/' + str(args.output_folder) + '/4_clusters_sizes/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clustprot_sizes_sampled.stat'		
+		output_stat = open(filename_details, 'w')		
+	
 		#general info
 		output_stat.write("[protein clustering statistics - written by clustering_prot v" + str(version_nb) + "]\n")
 		output_stat.write("\n")
@@ -4285,7 +4227,7 @@ def write_frame_stat(f_nb, f_index, f_t):
 		if args.xtcfilename != "no":
 			output_stat.write("\n")
 			output_stat.write("3. frame:	" + str(nb_frames_to_process) + " (" + str(nb_frames_xtc) + " frames in xtc, step=" + str(args.frames_dt) + ")\n")
-
+		
 		#data results
 		output_stat.write("\n")
 		output_stat.write("Sizes sampled: ")
@@ -4295,16 +4237,16 @@ def write_frame_stat(f_nb, f_index, f_t):
 		output_stat.write(tmp_res[1:] + "\n")
 		output_stat.write("\n")
 		output_stat.close()
-
+		
 		#groups
 		#------
 		if args.cluster_groups_file != "no":
 			#create file
 			if args.xtcfilename == "no":
-				filename_details = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clustprot_groups_sampled.stat'
+				filename_details = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clustprot_groups_sampled.stat'		
 			else:
-				filename_details = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clustprot_groups_sampled.stat'
-			output_stat = open(filename_details, 'w')
+				filename_details = os.getcwd() + '/' + str(args.output_folder) + '/5_clusters_groups/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clustprot_groups_sampled.stat'		
+			output_stat = open(filename_details, 'w')		
 
 			#general info
 			output_stat.write("[protein clustering statistics - written by clustering_prot v" + str(version_nb) + "]\n")
@@ -4337,10 +4279,10 @@ def write_frame_stat(f_nb, f_index, f_t):
 			tmp_res = ""
 			for g_index in cluster_groups_sampled_TM:
 				tmp_res += "," + str(g_index)
-			output_stat.write(tmp_res[1:] + "\n")
+			output_stat.write(tmp_res[1:] + "\n")		
 			output_stat.write("\n")
 		output_stat.close()
-
+		
 	#case: xtc snapshot
 	#==================
 	else:
@@ -4351,8 +4293,8 @@ def write_frame_stat(f_nb, f_index, f_t):
 			filename_details=os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/sizes/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes.stat'
 		else:
 			filename_details=os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/sizes/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes_' + str(int(f_t)).zfill(5) + 'ns.stat'
-		output_stat = open(filename_details, 'w')
-
+		output_stat = open(filename_details, 'w')		
+	
 		#general info
 		output_stat.write("[protein clustering statistics - written by clustering_prot v" + str(version_nb) + "]\n")
 		output_stat.write("\n")
@@ -4383,11 +4325,11 @@ def write_frame_stat(f_nb, f_index, f_t):
 			tmp_cap2 += "--------"
 		output_stat.write(tmp_cap1 + "\n")
 		output_stat.write(tmp_cap2 + "\n")
-		for c_size in cluster_sizes_sampled:
+		for c_size in cluster_sizes_sampled:		
 			tmp_res += "	" + str(round(clusters_pc[c_size][f_index], 1))
-		output_stat.write(tmp_res + "\n")
+		output_stat.write(tmp_res + "\n")		
 		output_stat.close()
-
+		
 		#groups
 		#======
 		if args.cluster_groups_file != "no":
@@ -4396,8 +4338,8 @@ def write_frame_stat(f_nb, f_index, f_t):
 				filename_details = os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/groups/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups.stat'
 			else:
 				filename_details = os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/groups/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups_' + str(int(f_t)).zfill(5) + 'ns.stat'
-			output_stat = open(filename_details, 'w')
-
+			output_stat = open(filename_details, 'w')		
+		
 			#general info
 			output_stat.write("[protein clustering statistics - written by clustering_prot v" + str(version_nb) + "]\n")
 			output_stat.write("\n")
@@ -4415,7 +4357,7 @@ def write_frame_stat(f_nb, f_index, f_t):
 			if args.xtcfilename != "no":
 				output_stat.write("\n")
 				output_stat.write("3. time: " + str(f_t) + "ns (frame " + str(f_nb) + "/" + str(nb_frames_xtc) + ")\n")
-
+		
 			#group index definition
 			output_stat.write("\n")
 			output_stat.write("Group size ranges:\n")
@@ -4434,20 +4376,20 @@ def write_frame_stat(f_nb, f_index, f_t):
 				tmp_cap2 += "--------"
 			output_stat.write(tmp_cap1 + "\n")
 			output_stat.write(tmp_cap2 + "\n")
-			for g_index in cluster_groups_sampled_TM:
+			for g_index in cluster_groups_sampled_TM:		
 				tmp_res += "	" + str(round(clusters_pc_groups[g_index][f_index],1))
-			output_stat.write(tmp_res + "\n")
+			output_stat.write(tmp_res + "\n")		
 			output_stat.close()
 
 	return
 def write_frame_snapshot(f_index, f_t):
-
+	
 	#sizes
 	#-----
 	#store cluster info in beta factor field
 	for p_index in range(0, nb_proteins):
 			proteins_sele[prot_index2specie[p_index]][prot_index2rel[p_index]].set_bfactor(proteins_size[f_index, p_index])
-
+	
 	#write annotated file
 	if args.xtcfilename == "no":
 		all_atoms.write(os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/sizes/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes', format="PDB")
@@ -4455,14 +4397,14 @@ def write_frame_snapshot(f_index, f_t):
 		tmp_name = os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/sizes/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes_' + str(int(f_t)).zfill(5) + 'ns.pdb'
 		W = Writer(tmp_name, nb_atoms)
 		W.write(all_atoms)
-
+	
 	#groups
 	#------
 	if args.cluster_groups_file != "no":
 		#store cluster info in beta factor field
 		for p_index in range(0, nb_proteins):
 				proteins_sele[prot_index2specie[p_index]][prot_index2rel[p_index]].set_bfactor(proteins_group[f_index, p_index])
-
+		
 		#write annotated file
 		if args.xtcfilename == "no":
 			all_atoms.write(os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/groups/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups', format = "PDB")
@@ -4470,7 +4412,7 @@ def write_frame_snapshot(f_index, f_t):
 			tmp_name=os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/groups/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups_' + str(int(f_t)).zfill(5) + 'ns.pdb'
 			W = Writer(tmp_name, nb_atoms)
 			W.write(all_atoms)
-
+		
 	return
 def write_frame_annotation(f_index, f_t):
 
@@ -4481,24 +4423,24 @@ def write_frame_annotation(f_index, f_t):
 		filename_details=os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/sizes/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes.txt'
 	else:
 		filename_details=os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/sizes/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_sizes_' + str(int(f_t)).zfill(5) + 'ns.txt'
-	output_stat = open(filename_details, 'w')
+	output_stat = open(filename_details, 'w')		
 
 	#output VMD protein selection line
 	tmp_prot_sele = ""
 	for p_index in range(0, nb_proteins):
 		tmp_prot_sele += "." + proteins_sele_string_VMD[prot_index2specie[p_index]][prot_index2rel[p_index]]
 	output_stat.write(tmp_prot_sele[1:] + "\n")
-
+				
 	#ouput min and max size
 	output_stat.write(str(np.min(proteins_size[f_index,:])) + "." + str(np.max(proteins_size[f_index,:])) + "\n")
-
+	
 	#ouptut cluster size for each protein
 	tmp_sizes = "1"
 	for p_index in range(0, nb_proteins):
 		tmp_sizes += "." + str(proteins_size[f_index, p_index])
 	output_stat.write(tmp_sizes + "\n")
 	output_stat.close()
-
+	
 	#groups
 	#------
 	if args.cluster_groups_file != "no":
@@ -4507,29 +4449,29 @@ def write_frame_annotation(f_index, f_t):
 			filename_details = os.getcwd() + '/' + str(args.output_folder) + '/1_snapshots/groups/' + args.grofilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups.txt'
 		else:
 			filename_details = os.getcwd() + "/" + str(args.output_folder) + '/1_snapshots/groups/' + args.xtcfilename[:-4].split('/')[-1] + '_annotated_clusterprot_groups_' + str(int(f_t)).zfill(5) + 'ns.txt'
-		output_stat = open(filename_details, 'w')
-
+		output_stat = open(filename_details, 'w')		
+	
 		#output VMD protein selection line
 		tmp_prot_sele = ""
 		for p_index in range(0, nb_proteins):
 			tmp_prot_sele += "." + proteins_sele_string_VMD[prot_index2specie[p_index]][prot_index2rel[p_index]]
 		output_stat.write(tmp_prot_sele[1:] + "\n")
-
+		
 		#ouput min and max size
 		output_stat.write(str(np.min(proteins_group[f_index,:])) + "." + str(np.max(proteins_group[f_index,:])) + "\n")
-
+		
 		#ouptut cluster size for each protein
 		tmp_groups = "1"
 		for p_index in range(0, nb_proteins):
 			tmp_groups += "." + str(proteins_group[f_index, p_index])
 		output_stat.write(tmp_groups + "\n")
 		output_stat.close()
-
+	
 	return
 def write_xtc_annotation(action):
-
+	
 	global output_xtc_annotate_cluster_size
-
+	
 	#create file name
 	#----------------
 	if action == "initialise":
@@ -4541,10 +4483,10 @@ def write_xtc_annotation(action):
 	#pre-prend info to file
 	#----------------------
 	elif action == "finish":
-
+	
 		#add remaining bit of info and read the whole file content before closing the file
 		with open(output_xtc_annotate_cluster_size, 'a') as f:
-			f.write(vmd_cluster_size)
+			f.write(vmd_cluster_size)		
 		#read content of file
 		with open(output_xtc_annotate_cluster_size, 'r') as f:
 			tmp_data = f.read()
@@ -4559,7 +4501,7 @@ def write_xtc_annotation(action):
 			f.write(str(min(cluster_sizes_sampled)) + "." + str(max(cluster_sizes_sampled)) + "\n")
 			#write data
 			f.write(tmp_data)
-
+	
 		if args.cluster_groups_file != "no":
 			#add remaining bit of info and read the whole file content before closing the file
 			with open(output_xtc_annotate_cluster_group, 'a') as f:
@@ -4582,7 +4524,7 @@ def write_xtc_annotation(action):
 
 #annotations: residues interactions
 def write_gro_interactions():
-
+	
 	for s_index1 in range(0,nb_species):
 		s1 = proteins_species[s_index1]
 		#homo interactions
@@ -4593,7 +4535,7 @@ def write_gro_interactions():
 			s1_sele = proteins_sele[s1][0]
 			tmp_s1 = np.sum(proteins_ctcts_res[s_index1,s_index1], axis = 1)
 			for r_index in range(0, proteins_length[s1]):
-				s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+				s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 			s1_sele.write(filename_gro, format="PDB")
 		#by size
 		for c_size in proteins_ctcts_res_size[s_index1,s_index1].keys():
@@ -4602,7 +4544,7 @@ def write_gro_interactions():
 				s1_sele = proteins_sele[s1][0]
 				tmp_s1 = np.sum(proteins_ctcts_res_size[s_index1,s_index1][c_size], axis = 1)
 				for r_index in range(0, proteins_length[s1]):
-					s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+					s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 				s1_sele.write(filename_gro, format="PDB")
 		#by group
 		if args.cluster_groups_file != "no":
@@ -4612,9 +4554,9 @@ def write_gro_interactions():
 					s1_sele = proteins_sele[s1][0]
 					tmp_s1 = np.sum(proteins_ctcts_res_group[s_index1,s_index1][g_index], axis = 1)
 					for r_index in range(0, proteins_length[s1]):
-						s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+						s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 					s1_sele.write(filename_gro, format="PDB")
-
+		
 		#hetero interactions
 		#-------------------
 		for s_index2 in range(s_index1 + 1, nb_species):
@@ -4626,15 +4568,15 @@ def write_gro_interactions():
 				s1_sele = proteins_sele[s1][0]
 				tmp_s1 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 1)
 				for r_index in range(0, proteins_length[s1]):
-					s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+					s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 				s1_sele.write(filename_gro, format="PDB")
-
+				
 				#s2
 				filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s2]) + '_residues_interacting_with_' + str(proteins_names[s1])
 				s2_sele = proteins_sele[s2][0]
 				tmp_s2 = np.sum(proteins_ctcts_res[s_index1,s_index2], axis = 0)
 				for r_index in range(0, proteins_length[s2]):
-					s2_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
+					s2_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
 				s2_sele.write(filename_gro, format="PDB")
 			#by size
 			for c_size in proteins_ctcts_res_size[s_index1,s_index2].keys():
@@ -4644,15 +4586,15 @@ def write_gro_interactions():
 					s1_sele = proteins_sele[s1][0]
 					tmp_s1 = np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size], axis = 1)
 					for r_index in range(0, proteins_length[s1]):
-						s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+						s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 					s1_sele.write(filename_gro, format="PDB")
-
+					
 					#s2
 					filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s2]) + '_residues_interacting_with_' + str(proteins_names[s1]) + '_size' + str(c_size)
 					s2_sele = proteins_sele[s2][0]
 					tmp_s2 = np.sum(proteins_ctcts_res_size[s_index1,s_index2][c_size], axis = 0)
 					for r_index in range(0, proteins_length[s2]):
-						s2_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
+						s2_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
 					s2_sele.write(filename_gro, format="PDB")
 			#by group
 			if args.cluster_groups_file != "no":
@@ -4663,15 +4605,15 @@ def write_gro_interactions():
 						s1_sele = proteins_sele[s1][0]
 						tmp_s1 = np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index], axis = 1)
 						for r_index in range(0, proteins_length[s1]):
-							s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
+							s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s1[r_index])
 						s1_sele.write(filename_gro, format="PDB")
-
+						
 						#s2
 						filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s2]) + '_residues_interacting_with_' + str(proteins_names[s1]) + '_g' + groups_labels[g_index]
 						s2_sele = proteins_sele[s2][0]
 						tmp_s2 = np.sum(proteins_ctcts_res_group[s_index1,s_index2][g_index], axis = 0)
 						for r_index in range(0, proteins_length[s2]):
-							s2_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
+							s2_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(tmp_s2[r_index])
 						s2_sele.write(filename_gro, format="PDB")
 
 		#interaction with lipids
@@ -4684,7 +4626,7 @@ def write_gro_interactions():
 					filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s1]) + '_residues_interacting_with_upper_lipids_beads_size' + str(c_size)
 					s1_sele = proteins_sele[s1][0]
 					for r_index in range(0, proteins_length[s1]):
-						s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_size["upper"][s_index1][c_size][r_index])
+						s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_size["upper"][s_index1][c_size][r_index])
 					s1_sele.write(filename_gro, format="PDB")
 			#lower
 			for c_size in proteins_ctcts_res_lip_size["lower"][s_index1].keys():
@@ -4692,7 +4634,7 @@ def write_gro_interactions():
 					filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s1]) + '_residues_interacting_with_lower_lipids_beads_size' + str(c_size)
 					s1_sele = proteins_sele[s1][0]
 					for r_index in range(0, proteins_length[s1]):
-						s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_size["lower"][s_index1][c_size][r_index])
+						s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_size["lower"][s_index1][c_size][r_index])
 					s1_sele.write(filename_gro, format="PDB")
 			#by group
 			if args.cluster_groups_file != "no":
@@ -4702,14 +4644,14 @@ def write_gro_interactions():
 						filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s1]) + '_residues_interacting_with_upper_lipids_beads_size_g' + groups_labels[g_index]
 						s1_sele = proteins_sele[s1][0]
 						for r_index in range(0, proteins_length[s1]):
-							s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_group["upper"][s_index1][g_index][r_index])
+							s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_group["upper"][s_index1][g_index][r_index])
 						s1_sele.write(filename_gro, format="PDB")
 					#lower
 					if np.sum(proteins_ctcts_res_lip_group["lower"][s_index1][g_index]) > 0:
 						filename_gro = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/' + str(proteins_names[s1]) + '_residues_interacting_with_lower_lipids_beads_size_g' + groups_labels[g_index]
 						s1_sele = proteins_sele[s1][0]
 						for r_index in range(0, proteins_length[s1]):
-							s1_sele.select_atoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_group["lower"][s_index1][g_index][r_index])
+							s1_sele.selectAtoms("resnum " + str(r_index + 1)).set_bfactor(proteins_ctcts_res_lip_group["lower"][s_index1][g_index][r_index])
 						s1_sele.write(filename_gro, format="PDB")
 
 	return
