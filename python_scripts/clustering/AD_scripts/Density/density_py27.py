@@ -97,7 +97,7 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 	#define the delta t (in nb of frames) for vector calculation:
 
 	dt = 1
-	start_frame = U.trajectory.n_frames - 200 #626 #1000
+	start_frame = U.trajectory.n_frames - 100 #626 #1000
 	last_frame = U.trajectory.n_frames - dt
 	cutoff = 120
 	cutoff1 = 120
@@ -109,7 +109,7 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 	vector_list = np.zeros((proteins1_nb, len(range(start_frame, last_frame, dt)), 1, 3))
 
-	# bb nav = 1315 bb beta3 = 380
+	# bb nav = 1315 bb beta3 = 381
 	nb_bb1 = 1315
 	nb_bb2 = 166
 
@@ -219,6 +219,8 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 				coord_pt = [coord_t[p1_index][440][0], coord_t[p1_index][440][1], 0] # select x and y coord of reference particle
 
 				rot = rotation_matrix(math.radians(angle_2D_between(coord_pt, [0, 1, 0]))) # get the rotation matrix from this reference vector
+
+				vector_list[p1_index, frame_num, :] = rotate_coord(coord_pt, rot)
 
 
 				###### SELECTION OF WHAT TO PLOT #######
@@ -759,14 +761,17 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 	# label matplotlib axes
 	matplotlib.pyplot.xlabel('X [A]', size=15)
 	matplotlib.pyplot.ylabel('Y [A]', size=15)
-	ticks_x = int((xmax-xmin)/10)
-	ticks_y = int((ymax-ymin)/10)
+	#ticks_x = int((xmax-xmin)/10)
+	#ticks_y = int((ymax-ymin)/10)
+
+	ticks_x = 11
+	ticks_y = 11
 
 	# definition of axes for the graph
 	ax.set_xlim([xmin, xmax])
 	ax.set_ylim([ymin, ymax])
-	ax.set_xticks(numpy.arange(xmin, xmax, ticks_x))
-	ax.set_yticks(numpy.arange(ymin, ymax, ticks_y))
+	ax.set_xticks(numpy.linspace(xmin, xmax, ticks_x))
+	ax.set_yticks(numpy.linspace(ymin, ymax, ticks_y))
 	ax.set_aspect('equal')
 
 	if units == "nm":
@@ -780,8 +785,8 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 		ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * scale))
 		ax.xaxis.set_major_formatter(ticks)
 		ax.yaxis.set_major_formatter(ticks)
-		ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-		ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+		#ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+		#ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
 	max_array = max(array.flatten())
 	array_avg = array/max_array

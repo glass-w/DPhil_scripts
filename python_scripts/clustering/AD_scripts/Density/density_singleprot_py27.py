@@ -178,8 +178,18 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 
 				# coordinates of L440 at t+dt
 				coord_pt_dt = [coord_dt[440][0], coord_dt[440][1], 0]
-				rot = rotation_matrix(math.radians(angle_2D_between(coord_pt_dt, [0, 1, 0])))
+
+				# print("")
+				# print(coord_pt_dt)
+
+				# angle_2D_between already returns the angle in RADIANS, don't need to convert to radians again!
+
+				#rot = rotation_matrix(math.radians(angle_2D_between(coord_pt_dt, [0, 1, 0])))
+				rot = rotation_matrix(angle_2D_between(coord_pt_dt, [0, 1, 0]))
 				coord_pt_dt = rotate_coord(coord_pt_dt, rot)
+
+				# print (coord_pt_dt)
+				# print("")
 
 
 
@@ -226,17 +236,16 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	fig_angle_prot.savefig(title_angle_prot, dpi=200)
 
 
+
 	fig_vector_prot = matplotlib.pyplot.figure()
 	ax_vector_prot = fig_vector_prot.add_subplot(111)
-	#print(vector_list[5])
 	plot_prot(prot_list[5][0], -cutoff, cutoff, -cutoff, cutoff, ax_vector_prot)
 	plot_vector(vector_list[5][0], -cutoff, cutoff, -cutoff, cutoff, 'black', ax_vector_prot)
 
 	plot_density_array(array_bin, xedges, yedges, -cutoff, cutoff, -cutoff, cutoff, 50, ax_vector_prot, 'BuPu')
 
-	title_vector_prot = img_name+'.svg'
+	title_vector_prot = img_name + '.svg'
 	fig_vector_prot.savefig(title_vector_prot, dpi=200)
-
 
 # -----------------------------------------------------------------------------------------------
 #
@@ -249,8 +258,8 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 def angle_2D_between(v1, v2):
 
 	angle = 0
-	v1_u = [v1[0],v1[1]] / la.norm([v1[0],v1[1]])
-	v2_u = [v2[0],v2[1]] / la.norm([v2[0],v2[1]])
+	v1_u = [v1[0], v1[1]] / la.norm([v1[0], v1[1]])
+	v2_u = [v2[0], v2[1]] / la.norm([v2[0], v2[1]])
 	dot =  np.dot(v1_u, v2_u)
 	#print(dot)
 	if (dot >= 1):
@@ -261,6 +270,7 @@ def angle_2D_between(v1, v2):
 		angle = math.acos(dot) # acos returns angle in RADIANS
 
 	sign = v1[0]*v2[1] - v2[0]*v1[1]
+
 	if sign < 0:
 		angle = -angle
 
@@ -462,6 +472,7 @@ def plot_prot_angle(coord, xmin, xmax, ymin, ymax, angle, frame, ax):
 # plot the coordinates of the proteins
 def plot_prot(coord, xmin, xmax, ymin, ymax, ax):
 
+	from matplotlib.ticker import FuncFormatter, MaxNLocator
 
 	# label matplotlib axes
 	matplotlib.pyplot.xlabel('X [A]', size=15)
@@ -476,6 +487,18 @@ def plot_prot(coord, xmin, xmax, ymin, ymax, ax):
 	ax.set_xticks(numpy.arange(xmin, xmax, ticks_x))
 	ax.set_yticks(numpy.arange(ymin, ymax, ticks_y))
 	ax.set_aspect('equal')
+
+	matplotlib.pyplot.xlabel('X / nm', size=15)
+	matplotlib.pyplot.ylabel('Y / nm', size=15)
+
+	import matplotlib.ticker as ticker
+
+	scale = 0.1
+	ticks = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * scale))
+	ax.xaxis.set_major_formatter(ticks)
+	ax.yaxis.set_major_formatter(ticks)
+	ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+	ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
 	#BtuB
 	#ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'o',markerfacecolor='#88C578',markeredgecolor='#000000',markersize=7,alpha=0.8)
@@ -574,12 +597,12 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 	ticks_x = 11
 	ticks_y = 11
 
-	print (ymax)
-	print (ymin)
-	print (xmax)
-	print (xmin)
-	print (ticks_x)
-	print (ticks_y)
+	# print (ymax)
+	# print (ymin)
+	# print (xmax)
+	# print (xmin)
+	# print (ticks_x)
+	# print (ticks_y)
 
 	# definition of axes for the graph
 	ax.set_xlim([xmin, xmax])
