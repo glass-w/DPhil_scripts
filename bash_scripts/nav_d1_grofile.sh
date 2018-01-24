@@ -13,20 +13,21 @@
 
 ORIG=`pwd`
 
-GROFILE=confout.gro
-XTCFILE=traj_comp.xtc
+GROFILE=`ls *.gro`
+GROFILENAME=`ls *.gro | cut -d "." -f 1`
+XTCFILE=`ls *.xtc`
 TPRFILE=`ls *.tpr`
 
-REPEAT=${PWD##*/} # assumes the directory you're in is named as the repeat e.g r0, r1, r2 etc
+#REPEAT=${PWD##*/} # assumes the directory you're in is named as the repeat e.g r0, r1, r2 etc
 
-ROTAMER=`echo "$ORIG" | rev | cut -d/ -f2 | rev` # takes the parent directory name of the current directory
+#ROTAMER=`echo "$ORIG" | rev | cut -d/ -f2 | rev` # takes the parent directory name of the current directory
 
 ##### MAIN PROG #####
 
 { echo "ri 90-190"; echo "q"; } | gmx_sse make_ndx -f $GROFILE -o index.ndx
 
-NDXFILE=index.ndx
+NDXFILE=`ls *.ndx`
 
-{ echo "24"; echo "24"; } | gmx_sse trjconv -f $GROFILE -s $TPRFILE -n $NDXFILE -pbc mol -center -o "$ROTAMER"_"$REPEAT"_resid_90_190.gro
-{ echo "24"; echo "24"; } | gmx_sse trjconv -f $XTCFILE -s $TPRFILE -n $NDXFILE -pbc mol -center -o "$ROTAMER"_"$REPEAT"_resid_90_190.xtc
+{ echo "24"; echo "24"; } | gmx_sse trjconv -f $GROFILE -s $TPRFILE -n $NDXFILE -pbc mol -center -o "$GROFILENAME"_resid_90_190.gro
+{ echo "24"; echo "24"; } | gmx_sse trjconv -f $XTCFILE -s $TPRFILE -n $NDXFILE -pbc mol -center -o "$GROFILENAME"_resid_90_190.xtc
 

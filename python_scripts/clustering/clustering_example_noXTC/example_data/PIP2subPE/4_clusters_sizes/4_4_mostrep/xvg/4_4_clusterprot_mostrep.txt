@@ -1,5 +1,0 @@
-@[peptides clustering statistics - written by clustering_prot v0.0.7]
-@Use this file as the argument of the -c option of the script 'xvg_animate' in order to make a time lapse movie of the data in 1_4_clusterprot_mostrep.xvg.
-1_2_clusterprot_mostrep.xvg,1,size,k
-1_2_clusterprot_mostrep.xvg,2,%,c
-1_2_clusterprot_mostrep.xvg,3,nb,r

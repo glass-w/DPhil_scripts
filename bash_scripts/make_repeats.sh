@@ -10,8 +10,11 @@ XTCFILE=`ls *.xtc`
 NDXFILE=`ls *.ndx`
 CPTFILE=`ls *.cpt`
 
+count_0=`ls -1 *.ndx 2>/dev/null | wc -l`
+if [ $count_0 = 0 ]
+then
 gmx_sse make_ndx -f $GROFILE -o index.ndx
-
+fi
 
 count=`ls -1 *.cpt 2>/dev/null | wc -l`
 if [ $count != 0 ]

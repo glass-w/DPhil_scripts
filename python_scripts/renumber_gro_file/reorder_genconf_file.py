@@ -59,7 +59,7 @@ def make_new_top_file(top_filename, n_repeats, genconf_filename):
     return molecules, nmols
 
 #Protein_list = ['OmpF', 'BtuB']
-cheat_dictionary = {'OmpF':2208, 'BtuB':1332, 'OmpF_BONDINI':2049, 'BtuB_BONDINI':1148}
+cheat_dictionary = {'OmpF':2208, 'BtuB':1332, 'OmpF_BONDINI':2049, 'BtuB_BONDINI':1148, 'Protein_nav':2993, 'Protein_beta3':381}
 
 def reorder_genconf_file(genconf_filename, molecules, nmols, n_repeats, force_field='martini'):
     #define a new filename for the reordered genconf file:

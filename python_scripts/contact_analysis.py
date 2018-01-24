@@ -1,193 +1,227 @@
-import seaborn
+#import seaborn
 import MDAnalysis as mda
 import numpy as np
-from MDAnalysis.analysis import distances
+#from MDAnalysis.analysis import distances
+from MDAnalysis.lib.distances import distance_array # faster C lib
 import matplotlib.pyplot as plt
 import glob, os
 from os.path import join
 from datetime import datetime
 
-#repeat = os.path.basename(os.getcwd())
+print ' '
+print "### Modules Used ####"
+print ' '
+print "NumPy Version: " + np.__version__
+print "MDAnalysis Version: " + mda.__version__
+print ' '
+print "####################"
+print ' '
 
-#u = mda.Universe("NM_" + str(repeat) +"_resid_90_190.gro", "NM_" + str(repeat) +"_resid_90_190.xtc")
+u = mda.Universe("restraints_31.25.gro", "b3tri_WB_200ns_skip10_noPBCComplete.xtc")
 
-u = mda.Universe("repeat_3_analysis_resid_90_190.gro", "repeat_3_analysis_resid_90_190.xtc")
+num_protein = 3
+cut_off_value = 15
+protein_selection = u.select_atoms("protein")
 
-sel = "(resname ARG LYS ASP GLU) and (resid 90:190)"
+def make_hmap(universe):
 
-resid = list(u.select_atoms(sel).atoms.residues.resids)
-resnames = list(u.select_atoms(sel).resnames)
-
-def make_hmap(universe, resid):
     ''' makes an empty numpy array to be populated
      universe = a single frame or whole trajectory
      resid = list of residue ids
+     resnames = list of residue names
      '''
 
-    name_store = []
-    resid_store = []
+    resid_list = np.asarray(u.select_atoms("protein and not backbone").atoms.residues.resids) # convert list to array
+    atom_list = np.asarray(u.select_atoms("protein").positions)
 
-    for item in range(len(resid)): # Get the names and resids of the amino acids of interest
+    #resname_list = np.asarray(u.select_atoms("protein and not backbone").atoms.residues.resnames)
 
-        aa = universe.select_atoms("resid " + str(resid[item]))
+    residue_heat_map = np.zeros((len(resid_list), len(resid_list))) # define the array size before making the heatmap
 
-        if aa.resnames[0] == "ASP":
+    atom_heat_map = np.zeros((len(atom_list), len(atom_list)))
 
-            name_store.append(aa.resnames[0])
 
-            resid_store.append(resid[item])
+    return resid_list, residue_heat_map, atom_heat_map
 
-        elif aa.resnames[0] == "LYS":
+def populate_hmap(empty_heatmap, universe, resid):
 
-            name_store.append(aa.resnames[0])
-
-            resid_store.append(resid[item])
-
-        elif aa.resnames[0] == "GLU":
-
-            name_store.append(aa.resnames[0])
-
-            resid_store.append(resid[item])
-
-        elif aa.resnames[0] == "ARG":
-
-            name_store.append(aa.resnames[0])
-
-            resid_store.append(resid[item])
-
-    hmap = np.zeros((len(name_store), len(name_store))) # define the array size before making the heathmap
-
-    return hmap, name_store, resid_store
-
-def populate_hmap(hmap, universe, resid):
     '''populates empty heatmap array for a single frame
-    hmap = empty numpy array of N x N
+    heatmap = empty numpy array of N x N
     universe = a single frame or whole trajectory
     resid = list of residue ids
-    aa = amino acids of interest
+    amino_acid = amino acid in the list
     '''
 
-    hmap_pop = hmap
+    heat_map_pop = empty_heatmap    # reset for the next cycle
 
-    com_store = []
+    com_store = np.zeros((len(resid), 3))
 
-    for item in range(len(resid)):
+    #for item in range(len(resid)):  # For each residue, calculate the c.o.m and store
 
-        aa = universe.select_atoms("resid " + str(resid[item]))
+        #com_store[item] = universe.select_atoms("resid " + str(resid[item])).center_of_mass()
 
-        if aa.resnames[0] == "ASP":
+    # Calculate a distance matrix
 
-            asp_com = aa.atoms[[8, 9]].center_of_mass()
+    #d = distance_array(np.array(com_store).astype(np.float32), np.array(com_store).astype(np.float32), box=u.dimensions,
+                       #backend='OpenMP')
 
-            com_store.append(asp_com)
+    # Define a new heat map based on a user defined cut-off and convert to 1's & 0's
 
-        elif aa.resnames[0] == "LYS":
+    #heat_map_pop += (d < cut_off_value).astype(int)
 
-            lys_com = aa.atoms[[16]].center_of_mass()
+    d = distance_array(np.array(universe.select_atoms("protein").positions).astype(np.float32), np.array(universe.select_atoms("protein").positions).astype(np.float32),\
+                       box=u.dimensions, backend='OpenMP')
 
-            com_store.append(lys_com)
+    heat_map_pop += (d < cut_off_value).astype(int)
 
-        elif aa.resnames[0] == "GLU":
+    return heat_map_pop
 
-            glu_com = aa.atoms[[11, 12]].center_of_mass()
-
-            com_store.append(glu_com)
-
-        elif aa.resnames[0] == "ARG":
-
-            arg_com = aa.atoms[[15, 16, 19]].center_of_mass()
-
-            com_store.append(arg_com)
-
-    contacts = distances.contact_matrix(np.array(com_store).astype(np.float32),
-                                        cutoff=4.0, returntype="numpy", box=universe.dimensions)
-
-    hmap_pop += contacts.astype(int)
-
-    # for k in range(len(contacts)):
-    #
-    #     for l in range(len(contacts)):
-    #
-    #         if contacts[k, l] == True:
-    #
-    #             hmap_pop[k, l] = hmap[k, l] + 1
-
-    hmap_pop = (hmap_pop / np.amax(hmap_pop)) * 100 # normalise to make a percentage
-
-    return hmap_pop
-
-def plot_hmap(data, names, resids):
+def plot_hmap(data, residues):
     '''plot a single frame
     data = the populated hmap
     names = list of amino acid names
     resids = list of resids of amino acids
     '''
 
-    mask = np.tri(data.shape[0], k=-1)
-
-    data = np.ma.array(data, mask=mask)
-
-    x = []
-    y = []
-    x.extend(range(len(names)))
-    y.extend(range(len(names)))
-
-    xticks = []
-    yticks = []
-
-    for i in range(len(names)):    # to get the correct x and y axis labels
-
-        xticks.append(str(names[i]) + str(' ') + str(resids[i]))
-        yticks.append(str(names[i]) + str(' ') + str(resids[i]))
+    data = (data / np.amax(data)) * 100  # normalise to make a percentage
 
     fig = plt.figure()
 
     ax = fig.add_subplot(111)
-    #ax.set_title('Frame Number: ' + str(frame.frame))
-    
-    plt.xticks(range(len(names)), xticks, rotation=90)
-    fig.subplots_adjust(bottom=0.2)
-    plt.yticks(range(len(names)), yticks)
 
-    plt.suptitle('Mutated Nav1.5: Residues < 4 Angstrom')
-    plt.xlabel("Residue")
-    plt.ylabel("Residue")
+    #colors = cm.ScalarMappable(cmap="viridis").to_rgba(data_value)
 
-    plt.imshow(data, cmap='viridis', interpolation='spline16')
 
-    #plt.setp(plt.plot(y, x), color='black', linewidth=6.0)
-    #plt.grid(color='white',  linestyle='dotted')
 
-    plt.grid(True)
+    #surf = ax.plot_surface(x,y,z,rstride=1, cstride=1,linewidth=0, antialiased=True)
 
-    plt.colorbar()
+    plt.suptitle('Contacts < ' + str(cut_off_value) + ' $\AA^2$')
+    plt.xlabel("Residue No.")
+    plt.ylabel("Residue No.")
+
+    plt.imshow(data, cmap='plasma')#, interpolation='spline16')
+
+    resid_labels = range(1, (len(residues) / num_protein))
+
+    # Add lines to see where protein repeats start and stop
+    plt.axvline((len(residues)/num_protein), c='white', linestyle='--', lw=0.4)
+    plt.axvline((len(residues)/num_protein)*(num_protein - 1), c='white', linestyle='--', lw=0.4)
+    plt.axhline((len(residues) / num_protein), c='white', linestyle='--', lw=0.4)
+    plt.axhline((len(residues) / num_protein) * (num_protein - 1), c='white', linestyle='--', lw=0.4)
+
+    cbar = plt.colorbar()
+    cbar.ax.set_ylabel('Interaction percentage over trajectory', rotation=270)
+    cbar.ax.get_yaxis().labelpad = 20
+
+    #plt.show()
 
     return fig
+
+def assign_beta_values(universe, residue_ids): #### STILL IN TEST PHASE ####
+
+    residues_per_protein = (len(residue_ids) / num_protein)
+
+    atoms_per_protein = (len(universe.select_atoms("protein").positions) / num_protein)
+
+    #interface_array = heat_map_pop[0:(length_of_protein * 2), length_of_protein:(length_of_protein * 3) ] # selects square array of interactions off-diagonal
+
+    #prot_1_2_array = heat_map_pop[0:(residues_per_protein), (residues_per_protein):((residues_per_protein) * 2)]
+
+    #prot_1_3_array = heat_map_pop[0:(residues_per_protein), (residues_per_protein * 2):(residues_per_protein * 3)]
+
+    #
+    # prot_2_3_array = heat_map_pop[(residues_per_protein):((residues_per_protein) * 2), (residues_per_protein * 2):(residues_per_protein)]
+
+    prot_atoms_1_2_array = heat_map_pop[0:(atoms_per_protein), (atoms_per_protein):((atoms_per_protein) * 2)]
+
+    prot_atoms_1_3_array = heat_map_pop[0:(atoms_per_protein), (atoms_per_protein * 2):(atoms_per_protein * 3)]
+
+    prot_atoms_2_3_array = heat_map_pop[(atoms_per_protein):((atoms_per_protein) * 2),
+                     (atoms_per_protein * 2):(atoms_per_protein * 3)]
+
+
+
+    # Calculate the mean of each interaction matrix, then loop through these arrays and assign each element to a number
+    # The number is equivalent to the residue number
+
+    for i,b in enumerate(np.concatenate([prot_atoms_1_2_array.mean(0), prot_atoms_2_3_array.mean(0), prot_atoms_1_3_array.mean(0)])):
+
+        protein_selection.select_atoms("bynum " + str(i)).set_bfactors(b)
+
+    #for i in range(length_of_protein):
+
+        #if 0 <= i <= (length_of_protein - 1):
+
+            # Get average interfaces contacts on protein 1
+
+        #protein_selection.select_atoms("resnum " + str(i + 1)).set_bfactors(prot_1_2_array.mean(0)[i])
+
+        #protein_selection.select_atoms("resnum " + str((2 * length_of_protein) + i)).set_bfactors(prot_1_3_array.mean(0)[i])
+
+        #for j in range(length_of_protein):
+
+            #print "j = " + str(j)
+
+            #if (0 <= i <= length_of_protein - 1) and (0 <= j <= (length_of_protein - 1)) and interface_array[i, j] >= 1: # if in top left quad
+
+                # set average across rows of interaction?
+
+                #protein_selection.select_atoms("resnum " + str(i + 1)).set_bfactors(interface_array.mean(1)[i])
+
+
+
+                # colour protein 1 & 2
+
+                # p1
+                #protein_selection.select_atoms("resnum " + str(i + 1)).set_bfactors(interface_array[i, j])
+                # p2
+                #protein_selection.select_atoms("resnum " + str((length_of_protein) + j)).set_bfactors(interface_array[i, j])
+
+            #if (0 <= i <= length_of_protein - 1) and (length_of_protein <= j <= ((length_of_protein - 1) * 2)) and interface_array[i, j] >= 1: #if in top right quad
+
+                # colour protein 3 & 1
+
+                # p3
+                #protein_selection.select_atoms("resnum " + str((length_of_protein * 2) + i)).set_bfactors(interface_array[i, j])
+                # p1
+                #protein_selection.select_atoms("resnum " + str(j + 1)).set_bfactors(interface_array[i, j])
+
+            #if (length_of_protein <= i <= (length_of_protein - 1) * 2) and (length_of_protein <= j <= ((length_of_protein - 1) * 2)) and interface_array[i, j] >= 1: #if in bottom right quad
+
+                # colour protein 2
+
+                #protein_selection.select_atoms("resnum " + str(length_of_protein + i)).set_bfactors(interface_array[i, j])
+                #protein_selection.select_atoms("resnum " + str(length_of_protein + j)).set_bfactors(interface_array[i, j])
+
+    protein_selection.write("test_bfact_all.pdb", format="PDB")
 
 if __name__ == "__main__":
 
     startTime = datetime.now()
 
-    hmap, name_store, resid_store = make_hmap(universe=u, resid=resid)
+    residue_ids, initial_resiude_heat_map, initial_atom_heat_map = make_hmap(universe=u)
 
     for frame in u.trajectory:
 
+        if u.trajectory.frame % 10 == 0:
+            print "Frame = " + str(u.trajectory.frame)
+
         u.trajectory[frame.frame]
 
-        hmap_pop = populate_hmap(hmap=hmap, universe=u, resid=resid)
+        heat_map_pop = populate_hmap(empty_heatmap=initial_atom_heat_map, universe=u, resid=residue_ids)
 
-        fig = plot_hmap(data=hmap_pop, names=name_store, resids=resid_store)
+        #if u.trajectory.frame == 10:
+            #break
 
-        #fig.savefig("frame_{:04d}.png".format((frame.frame / 10))) # need correct format for ffmpeg to read sequen'y
+    u.trajectory[-1] # reset the trajectory prior to writing the beta values
+    assign_beta_values(universe=u, residue_ids=residue_ids)
 
-	fig.savefig("frame_{:04d}.png".format((frame.frame)))
 
+    identify_residues = heat_map_pop.astype(str)
+
+    fig = plot_hmap(data=heat_map_pop, residues=residue_ids)
+
+    fig.savefig('figure.svg', format='svg')
     fig.clf()
 
-    os.system('ffmpeg -i frame_%04d.png -filter:v "setpts=3.0*PTS" movie.mp4')
-
-#    for f in glob.glob("*.png"):
-
- #       os.remove(f)
-
-    print datetime.now() - startTime
+    print "Time taken = " + str(datetime.now() - startTime)

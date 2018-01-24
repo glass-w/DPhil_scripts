@@ -1,5 +1,0 @@
-[clustering_prot v0.1.2]
-
-This folder and its content were created using the following command:
-
-python clustering_prot.py -f ../processed_data/start.now.gro -x ../processed_data/md_prod6x6.0ustoPart418.50ns.noW.allwhole.pbcmol.xtc -o cluster_uptoPart418 --species Kir_info --res_used Kir_COG_info --nx_cutoff 82 --leaflets no -t 1 --graph_order all

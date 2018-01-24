@@ -39,11 +39,11 @@ then
 
 CPTFILE=`ls *.cpt`
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME".tpr -maxwarn 1
+gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME".tpr -maxwarn 2
 
 elif [ $cpt_count = 0 ]
 then
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME".tpr -maxwarn 1
+gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME".tpr -maxwarn 2
 
 fi

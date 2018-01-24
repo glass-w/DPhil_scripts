@@ -1,0 +1,17 @@
+The command line for George system is:
+
+run density_singleprot.py  --num-prot 25 --index_prot 644 --coord ./start_prot.gro --traj ./Prot_skip100_15us_nowat.xtc --res_prot 284 --bb_prot 292 --sf 0 --ef 50 --dt 1
+
+ It is like the other scripts:
+
+--num-prot: nb of proteins in your system
+--index_prot: nb of particles in your protein
+--coord: gro file
+--traj: xtc file
+--res_prot: nb of residues in your prot
+--bb_prot: nb of backbone residues in your prot
+--sf: start frame
+--ef: end frame
+--dt: dt for the frames
+
+ Please compare visually and with the cluster script from Jean if it gives you the same results. There is no reason that it would not work but I may have tweaked this script for some other projects and that can create artefacts. The best is also to focus on the last 100 frames when everything is clustered but you can also do that whenever you want: it might be a little bit noisy.

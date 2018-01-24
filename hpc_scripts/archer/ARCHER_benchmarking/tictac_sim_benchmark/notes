@@ -1,0 +1,39 @@
+A first few commands for ARCHER:
+qsub <submit_script>.sh
+    -> submit a job
+qstat -u <username>
+    -> view submitted jobs
+qsub -W depend=afterany:XXXXXXX <submit_script>.sh
+    -> submit a job with dependency on a previous job (XXXXXXX is the job ID number, in number in the 1st col of the qstat  output)
+    
+Most info on usage is on the SAFE page
+A good guide to all things archer is found at:
+http://www.archer.ac.uk/documentation/getting-started/
+or:
+http://www.archer.ac.uk/documentation/user-guide/
+
+The submit benchmark_template.sh is a useful guide to what you might use as a submit script.
+To use:
+1. change simulation name (line 3)
+2. select number of nodes (replace NNODES on line 4)
+3. change walltime to 24 hours (replace 0:15:0 with 24:0:0 on line 5)
+4. check project code (line 6)
+5. complete command (replace NCORES by the number of nodes you have chosen, multiplied by 24, on line 12
+                     and change anything after 'aprun -n NCORES mdrun_mpi')
+
+
+This folder contains tools for running benchmarks quickly:
+submit_benchmark_template.sh
+    -> template file - you need to alter the line '#PBS -A e280-Sansom' to have your project code, and also the name of the tpr file.
+make_benchmark
+     -> run this script to generate a set of submit files (using the submit_benchmark_template.sh file) for different number of cores for benchmarking. You might want to alter the number of cores you test by changing the numbers in the line 'for n in 2 4 8 16 32 64 128 256; do'.  Note that this script assumes that there are 24 nodes per core, which is correct for ARCHER but not necessarily other machines.
+run_benchmark
+    -> run this script to submit all of the submit files you have generated.  You will need to update the line '
+for n in 2 4 8 16 32 64 128 256; do', to be the same as whatever you decided to use in make_benchmark
+
+The final file, read_log_files_ARCHER reads the log files created and outputs the number of ns/day (which is reported at the end of the log file) into an output file, benchmark results. 
+Update the line that starts 'for nnode...' so that the numbers agree with what you went for in make_benchark and run_benchmark. 
+
+
+
+For an example production run submit script, see: submit_KIR_3x3.sh

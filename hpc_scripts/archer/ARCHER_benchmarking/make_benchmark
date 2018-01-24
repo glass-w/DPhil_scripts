@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for n in 2 4 8 16 32 64 128 256; do
+echo $n
+cores=$(expr $n \* 24)
+echo $cores
+sed "s/NCORES/$cores/g" submit_benchmark_template.sh > submit_benchmark$cores.sh
+sed -i "s|select=NNODES|select=$n|g" submit_benchmark$cores.sh
+done
