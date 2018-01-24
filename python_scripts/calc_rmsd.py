@@ -74,33 +74,58 @@ def plot(data, plot_name):
 
 def plot_multiple():
 
-    files = glob("./*.csv")
+    files = glob("*.csv")
 
-    print files
+    #print files
 
     dataLists =[]
 
-    for file in files:
+    # for file in files:
+    #
+    #     print (file)
 
-        dataLists[file.split(".")[0]].append(pd.read_csv(file))
+        #dataLists[file.split(".")[0]].append(pd.read_csv(file))
 
 
     ax = plt.subplot(111)
     ax.set_title(r"RMSD of $\beta$3 Trimer EC Domain")
 
     # Temporary fix!
-    mean = np.mean(np.array([split_all[0], split_all[1]]), axis=0)
+    #mean = np.mean(np.array([split_all[0], split_all[1]]), axis=0)
 
     ### Plotting ###
+
+    y_list =[]
+    avg = []
+
+    # plot repeats
 
     for repeat in range(len(files)):
 
         plot_data = np.array(pd.DataFrame(pd.read_csv(files[repeat])))
 
-        ax.plot((plot_data[:, 0] / 1000), (plot_data[:, 1]), lw=1, alpha=0.25,
-                label='Run ' + str(repeat))
+        time = plot_data[:, 0]
+        rmsd = plot_data[:, 1]
 
-    ax.plot(mean[:, 0] / 1000, mean[:, 1], lw=0.5, alpha=1, color='black', label='Average')
+        ax.plot((time / 1000), rmsd, lw=1, alpha=0.25, label='Run ' + str(repeat))
+
+        y_list.append(rmsd)
+
+    # plot average line
+
+    for row in range(len(rmsd)):
+
+        # take the same particle from each repeat
+        particle_list = [item[row] for item in y_list]
+
+        # take the average over each run
+        avg.append(np.average(particle_list))
+
+    #rolling_mean = running_mean(avg, 100)
+
+    #ax.plot(time / 1000, avg[:], lw=0.5, alpha=1, color='black', label='Average')
+
+    ax.plot(time / 1000, avg, lw=0.5, alpha=1, color='black', label='Average')
 
     ax.set_xlabel("Time / ns")
     ax.set_ylabel("RMSD from t = 0 / $\AA$")
@@ -110,6 +135,13 @@ def plot_multiple():
     ax.figure.savefig("multiple_RMSD.svg", format='svg')
 
     print "Plot complete."
+
+
+def running_mean(x, N):
+
+    cumsum = np.cumsum(np.insert(x, 0, 0))
+
+    return (cumsum[N:] - cumsum[:-N]) / N
 
 
 # To Do: add an average line to the multiple plots...
