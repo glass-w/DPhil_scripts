@@ -97,8 +97,8 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 	#define the delta t (in nb of frames) for vector calculation:
 
 	dt = 1
-	start_frame = U.trajectory.n_frames - 100 #626 #1000
-	last_frame = U.trajectory.n_frames - dt
+	start_frame = U.trajectory.n_frames - U.trajectory.n_frames
+	last_frame = U.trajectory.n_frames - (U.trajectory.n_frames - U.trajectory.n_frames/2)
 	cutoff = 120
 	cutoff1 = 120
 
