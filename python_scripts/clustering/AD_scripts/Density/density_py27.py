@@ -362,9 +362,6 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 		for frame in range(0, len(neighbours_prot[p1_index])):
 
-			fig_vector_prot = matplotlib.pyplot.figure()
-			ax_vector_prot = fig_vector_prot.add_subplot(111)
-
 			array_op, xedges, yedges = np.histogram2d(neighbours_prot[p1_index][frame][:, 0],
 													  neighbours_prot[p1_index][frame][:, 1],
 													  bins=50, range=[[-120, 120], [-120, 120]])

@@ -1,6 +1,5 @@
 # Code written by M. C. January 2014
 # Code adapted by W. G. January 2018
-#!/usr/bin/env python
 
 
 from __future__ import print_function
@@ -8,7 +7,7 @@ import MDAnalysis as mda
 from MDAnalysis.analysis.align import *
 import numpy as np
 import matplotlib
-import matplotlib.pyplot, sys,numpy
+import matplotlib.pyplot, sys, numpy
 import scipy.ndimage as ndi
 import itertools
 import math
@@ -19,11 +18,15 @@ import os
 import operator
 import scipy.stats as stats
 
+print ("MDAnalysis Version: " + str(mda.__version__))
+print ("NumPy Version: " + str(np.__version__))
+print ("Matplotlib Version: " + str(matplotlib.__version__))
+
 # --------------------------------------------
 #                  main function
 # --------------------------------------------
 
-def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, end_frame, delta_t, lip_sel, img_name):
+def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, end_frame, delta_t, lip_sel, plot, img_name):
 
 	mda.core.flags['use_pbc'] = False
 
@@ -62,18 +65,31 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 
 
 	#define the delta t (in nb of frames) for vector calculation:
+
 	dt = delta_t
-	prot_number = 0
 
 	#cutoff (in Angstrom) to display the density around the protein
+
 	cutoff = 120
 	cutoff1 = 120
 
 	#data structures
+
 	angle_list = np.zeros((proteins_nb, len(range(start_frame, end_frame, dt))))
 	vector_list = np.zeros((proteins_nb, len(range(start_frame, end_frame, dt)), 1, 3))
 	prot_list = np.zeros((proteins_nb, len(range(0, end_frame-start_frame, dt)), bb_prot, 3))
+
 	frame_list = np.linspace(0, end_frame-start_frame, ((end_frame-start_frame)/dt)+1)
+
+	lipid_dict = {'popc': 'name PO4 and resname POPC', 'pope': 'name PO4 and resname POPE', 'dpsm': 'name PO4 and'\
+					'resname DPSM', 'pops': 'name PO4 and resname POPS', 'pip2': 'name P2 and resname POP2',\
+				 'gm3': 'name GM1 and resname DPG3', 'chol': 'name ROH and resname CHOL' }
+
+	lipid_title_dict = {'popc': ['POPC','YlOrBr'], 'pope': ['POPE', 'YlOrRd'], 'dpsm': ['DPSM', 'OrRd'],\
+						'pops': ['POPS', 'PuRd'], 'pip2': ['PIP2', 'RdPu'], 'gm3': ['GM3', 'BuPu'],\
+						'chol': ['CHOL', 'PuBu']}
+
+	# To Do: Leaflet specification? At the moment only plot all leaflets in both lipids...
 
 	neighbours_prot = {}
 	neighbours_lip = {}
@@ -85,7 +101,7 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 		neighbours_lip[p_index] = {}
 
 	#lipid definition
-	lipids_sele_def = lip_sel  # like "name PO4"
+	lipids_sele_def = lipid_dict[lip_sel]  # like "name PO4"
 	lipids_sele = U.select_atoms(lipids_sele_def)
 
 
@@ -93,7 +109,8 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	#=============
 	frame_num = 0
 	U.trajectory.rewind()
-	for frame in range(start_frame,end_frame,dt):
+
+	for frame in range(start_frame, end_frame, dt):
 
 			#debug
 			print(frame)
@@ -120,16 +137,18 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 			coords_prot_removed_whole = np.zeros((proteins_nb, bb_prot, 3))
 
 			#get coords of lipids (ensuring they're all within 0 and box_dim)
-#			coords_lip = coords_remove_whole(lipids_sele.coordinates(), box_size)
 
+			coords_lip = coords_remove_whole(lipids_sele.positions, box_size)
 
 			for p_index in range(proteins_nb):
 
-				coords_prot_removed_whole[p_index, :] = coords_remove_whole(proteins_sele[p_index].BB.coordinates(), box_size)
+				coords_prot_removed_whole[p_index, :] = coords_remove_whole(proteins_sele[p_index].select_atoms('name BB').positions,
+																			box_size)
 
 			for p_index in range(proteins_nb):
 
 				# time t ---------------------------------------------------------------------
+
 				#store CoG of current prot
 				coord_CoG[p_index] = calculate_cog(coords_prot_removed_whole[p_index, :], box_size)
 
@@ -137,7 +156,10 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 				tmp_prot_centered = coords_center_in_box(coords_prot_removed_whole, coord_CoG[p_index], box_size)
 
 				#store neighbouring lipids coords in the same referential
-#				tmp_lipid_centered = coords_center_in_box(coords_lip, coord_CoG[p_index], box_size)
+
+				if plot == 'pl':
+
+					tmp_lipid_centered = coords_center_in_box(coords_lip, coord_CoG[p_index], box_size)
 
 				#store centered coords of current prot
 				coord_t[p_index] = tmp_prot_centered[p_index]
@@ -157,8 +179,17 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 				#print ('coord_pt, angle_2D_between(coord_pt, [0,1,0]), rot, vector_list[p_index,frame_num,:]', coord_pt, angle_2D_between(coord_pt, [0,1,0]), rot, vector_list[p_index,frame_num,:])
 
 				# TO CHECK THE VALUES IN HARD
-				neighbours_prot[p_index][frame_num] = rotate_coord(tmp_prot_neighbour, rot)
-#				neighbours_prot[p_index][frame_num] = rotate_coord(tmp_lipid_centered,rot)
+
+				if plot == 'pp':
+
+					neighbours_prot[p_index][frame_num] = rotate_coord(tmp_prot_neighbour, rot)
+
+				elif plot =='pl':
+
+					neighbours_prot[p_index][frame_num] = rotate_coord(tmp_lipid_centered, rot)
+
+				else:
+					print ("No plot specified!")
 
 			# go through each protein and store reorientated coords, this is really for the plotting stage...
 
@@ -168,7 +199,8 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 				prot = proteins_sele[p1_index]
 
 				#put coord of proteins back in the box
-				coord_dt = coords_remove_whole(prot.BB.coordinates(), box_size)
+				#coord_dt = coords_remove_whole(prot.BB.coordinates(), box_size)
+				coord_dt = coords_remove_whole(prot.select_atoms('name BB').positions, box_size)
 
 				#calculate CoG
 				CoG_dt = calculate_cog(coord_dt, box_size)
@@ -179,19 +211,11 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 				# coordinates of L440 at t+dt
 				coord_pt_dt = [coord_dt[440][0], coord_dt[440][1], 0]
 
-				# print("")
-				# print(coord_pt_dt)
-
 				# angle_2D_between already returns the angle in RADIANS, don't need to convert to radians again!
 
 				#rot = rotation_matrix(math.radians(angle_2D_between(coord_pt_dt, [0, 1, 0])))
 				rot = rotation_matrix(angle_2D_between(coord_pt_dt, [0, 1, 0]))
 				coord_pt_dt = rotate_coord(coord_pt_dt, rot)
-
-				# print (coord_pt_dt)
-				# print("")
-
-
 
 				#store protein coordinates
 				prot_list[p1_index, frame_num, :] = rotate_coord(coord_dt, rot)
@@ -209,14 +233,11 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	xedges = []
 	yedges = []
 	list_angle = []
-	#print(vector_list[5:10])
-	for p_index in range(proteins_nb):
-		#print('Got this far...')
 
-		for frame in range(0,len(neighbours_prot[p_index])):
-			#print('How about this...')
-			#fig_vector_prot = matplotlib.pyplot.figure()
-			#ax_vector_prot = fig_vector_prot.add_subplot(111)
+	print ("Generating plot...")
+	for p_index in range(proteins_nb):
+
+		for frame in range(0, len(neighbours_prot[p_index])):
 
 			array_op, xedges, yedges = np.histogram2d(neighbours_prot[p_index][frame][:, 0], neighbours_prot[p_index][frame][:, 1], bins=40, range=[[-cutoff, cutoff], [-cutoff, cutoff]])
 			array_bin = array_bin + array_op
@@ -228,6 +249,14 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 					if dist < cutoff1:
 						list_angle.append(math.degrees(angle_2D_between([neighbours_prot[p_index][frame][vector, 0], neighbours_prot[p_index][frame][vector, 1], 0], [0, 1, 0])))
 
+	print ("Done.")
+
+	if plot == 'pp':
+		plot_title = 'Protein - Protein Interaction'
+
+	elif plot == 'pl':
+		plot_title = 'Protein - ' + str(lipid_title_dict[lip_sel][0]) + ' Interaction'
+
 	# create angle diagram
 	fig_angle_prot = matplotlib.pyplot.figure()
 	ax_angle_prot = fig_angle_prot.add_subplot(111)
@@ -235,14 +264,22 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	title_angle_prot = 'plot_angle_prot_final.svg'
 	fig_angle_prot.savefig(title_angle_prot, dpi=200)
 
-
-
+	# create vector diagram
 	fig_vector_prot = matplotlib.pyplot.figure()
 	ax_vector_prot = fig_vector_prot.add_subplot(111)
+	ax_vector_prot.set_title(plot_title)
+
 	plot_prot(prot_list[5][0], -cutoff, cutoff, -cutoff, cutoff, ax_vector_prot)
 	plot_vector(vector_list[5][0], -cutoff, cutoff, -cutoff, cutoff, 'black', ax_vector_prot)
 
-	plot_density_array(array_bin, xedges, yedges, -cutoff, cutoff, -cutoff, cutoff, 50, ax_vector_prot, 'BuPu')
+	if plot == 'pl':
+
+		plot_density_array(array_bin, xedges, yedges, -cutoff, cutoff, -cutoff, cutoff, 50, ax_vector_prot,
+						   lipid_title_dict[lip_sel][1])
+
+	elif plot == 'pp':
+
+		plot_density_array(array_bin, xedges, yedges, -cutoff, cutoff, -cutoff, cutoff, 50, ax_vector_prot, 'viridis')
 
 	title_vector_prot = img_name + '.svg'
 	fig_vector_prot.savefig(title_vector_prot, dpi=200)
@@ -740,30 +777,32 @@ def plot_angle_avg_std(avg_array, std_array, frame_array, ax):
 
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--traj', metavar='TRAJ_FILE', type=str, help='Trajectory files', nargs='+')
-    parser.add_argument('--coord', type=str, help='System coordinate file', required=True,
-                        dest='coord')
-    parser.add_argument('--num-prot', type=int, help='Number of proteins', default=1,
-                        dest='proteins_nb')
-    parser.add_argument('--index_prot', type=int, help='nb. atoms', default=1,
-                        dest='index_prot')
-    parser.add_argument('--bb_prot', type=int, help='nb. backbone atoms', default=1,
-                        dest='bb_prot')
-    parser.add_argument('--res_prot', type=int, help='Residue nb. of protein to align the proteins', default=1,
-                        dest='res_prot')
-    parser.add_argument('--sf', type=int, help='first frame number to use', default=1,
-                        dest='start_frame')
-    parser.add_argument('--ef', type=int, help='last frame number to use', default=1,
-                        dest='end_frame')
-    parser.add_argument('--dt', type=int, help='delta t', default=1,
-                        dest='delta_t')
-    parser.add_argument('--sel', type=str, help='lipid selection', default=1,
-                        dest='lip_sel')
-    parser.add_argument('--name', type=str, help='name of the image output', default=1,
-                        dest='img_name')
-    args = parser.parse_args()
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--traj', metavar='TRAJ_FILE', type=str, help='Trajectory files', nargs='+')
+	parser.add_argument('--coord', type=str, help='System coordinate file', required=True,
+						dest='coord')
+	parser.add_argument('--num-prot', type=int, help='Number of proteins', default=1,
+						dest='proteins_nb')
+	parser.add_argument('--index_prot', type=int, help='nb. atoms', default=1,
+						dest='index_prot')
+	parser.add_argument('--bb_prot', type=int, help='nb. backbone atoms', default=1,
+						dest='bb_prot')
+	parser.add_argument('--res_prot', type=int, help='Residue nb. of protein to align the proteins', default=1,
+						dest='res_prot')
+	parser.add_argument('--sf', type=int, help='first frame number to use', default=1,
+						dest='start_frame')
+	parser.add_argument('--ef', type=int, help='last frame number to use', default=1,
+						dest='end_frame')
+	parser.add_argument('--dt', type=int, help='delta t', default=1,
+						dest='delta_t')
+	parser.add_argument('--sel', type=str, help='lipid selection', default=1,
+						dest='lip_sel')
+	parser.add_argument('--plot', type=str, help='Plot type, either "pp" or "pl", i.e. Protein-Protein or Protein-Lipid')
+	parser.add_argument('--name', type=str, help='name of the image output', default=1,
+						dest='img_name')
+	args = parser.parse_args()
 
 
-    main(args.coord, args.traj, args.proteins_nb, args.index_prot, args.bb_prot, args.res_prot, args.start_frame, args.end_frame, args.delta_t, args.lip_sel, args.img_name)
+	main(args.coord, args.traj, args.proteins_nb, args.index_prot, args.bb_prot, args.res_prot,
+		 args.start_frame, args.end_frame, args.delta_t, args.lip_sel, args.plot, args.img_name)

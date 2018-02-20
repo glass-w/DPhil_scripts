@@ -3,97 +3,80 @@ from MDAnalysis.analysis.leaflet import LeafletFinder
 import numpy as np
 import sys, os
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullFormatter
 
-gro_file = "tictac_long_100ns_pbcmol_corrected_lipid_and_prot.gro"
-traj_file = "pr_tictac_10msr2_skip10_pbcmol_corrected_lipid_and_prot.xtc"
+lipid_head_group_dict = {'popc' : 'PO4', 'pope' : 'NH3', 'dpsm' : 'NC3', 'dpg3' : 'GM1', 'chol' : 'ROH', 'pops' : 'CNO', 'pop2' : 'P1'}
+lipid_group_dict = {'popc' : 'POPC', 'pope' : 'POPE', 'dpsm' : 'DPSM', 'dpg3' : 'DPG3', 'chol' : 'CHOL', 'pops' : 'POPS', 'pop2' : 'POP2'}
 
-u = mda.Universe(gro_file, traj_file)
+def main(coords, traj, lipid_sel, nbins):
 
-def main(universe, nbins):
+    u = mda.Universe(coords, traj)
 
-    box = u.dimensions[0:3]
+    #sel = "resname POPC and (name " + str(lipid_head_group_dict['popc'] + ")")
+    sel = "resname " + str(lipid_group_dict[str(lipid_sel)]) + " and (name " + str(lipid_head_group_dict['dpg3'] + ")")
 
-    box_x = box[0]
-    box_y = box[1]
-
-    sel = "name BB"
-
-    # L = LeafletFinder(universe=u, selectionstring=sel)
-    #
-    # leaflet0 = L.groups(0)
-    # leaflet1 = L.groups(1)
-
-
-    #sel_coords = u.select_atoms(sel).positions
-
-    hx = np.zeros((nbins-1))
-    hy = np.zeros((nbins - 1))
-    H = np.zeros((nbins-1, nbins-1))
-
-    #for frame in (u.trajectory[-1]):
-
-
-
-    u.trajectory[0]
-
-    # sel_coords = u.select_atoms(sel).positions
-
-    #xedges = np.linspace(np.min(sel_coords[:, 0]), np.max(sel_coords[:, 0]), 500)
-    #yedges = np.linspace(np.min(sel_coords[:, 1]), np.max(sel_coords[:, 1]), 500)
+    print (sel)
 
     x = []
     y = []
 
-#for frame in range(len(u.trajectory)-600):
+    for frame in range(len(u.trajectory)):
 
-    #u.trajectory[frame]
+        u.trajectory[frame]
 
-    u.trajectory[-1]
+        if frame % 10 == 0:
 
-    #print frame
+            print frame
 
-    sel_coords = u.select_atoms(sel).positions
+        sel_coords = u.select_atoms(sel).positions
 
-    for particle in range(len(sel_coords)):
+        L = LeafletFinder(universe=u, selectionstring=sel)
 
-        #if sel_coords[coord][2] >= (box[2] / 2):
+        leaflet0 = L.groups(0)
+        #leaflet1 = L.groups(1)
 
-        x.append(sel_coords[particle][0])
-        y.append(sel_coords[particle][1])
+        #for particle in range(len(sel_coords)):
 
-        #x.append(leaflet0[po4].position[0])
-        #y.append(leaflet0[po4].position[1])
+        for particle in range(len(leaflet0)):
 
-    histx = np.histogram(x, bins=nbins)
+            #x.append(sel_coords[particle][0])
+            #y.append(sel_coords[particle][1])
 
-    histy = np.histogram(y, bins=nbins)
+            x.append(leaflet0[particle].position[0])
+            y.append(leaflet0[particle].position[1])
 
     xedges = np.linspace(np.min(x), np.max(x), nbins)
     yedges = np.linspace(np.min(y), np.max(y), nbins)
 
-    hist, xedges, yedges = np.histogram2d(x=x, y=y, bins=(xedges, yedges), normed=False)
 
-    # H += hist
-    # hx += histx
-    # hy += histy
+    H, blahx, blahy = np.histogram2d(x=x, y=y, bins=(xedges, yedges))
 
-    H = hist
-    hx = histx
-    hy = histy
+    plt.imshow(H, interpolation='bicubic', cmap='plasma', extent=[0, np.max(xedges), 0, np.max(yedges)])
 
-    plt.plot(hx)
+    ax = plt.subplot(111)
+    ax.set_title("GM3 Average Density (10 us)")
 
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
 
-    H = H / np.max(H)
+    plt.show()
+
+    ##### PLOTTING #####
+
+    # PLOT WITH 1D HISTOGRAMS
+
+    nullfmt = NullFormatter()  # no labels
 
     # definitions for the axes
     # left, width = 0.1, 0.65
     # bottom, height = 0.1, 0.65
     # bottom_h = left_h = left + width + 0.02
-    #
+
     # rect_scatter = [left, bottom, width, height]
     # rect_histx = [left, bottom_h, width, 0.2]
     # rect_histy = [left_h, bottom, 0.2, height]
+    #
+    #
     #
     # # start with a rectangular Figure
     # plt.figure(1, figsize=(8, 8))
@@ -102,31 +85,35 @@ def main(universe, nbins):
     # axHistx = plt.axes(rect_histx)
     # axHisty = plt.axes(rect_histy)
     #
-    # axScatter.imshow(H, cmap='plasma', interpolation='bicubic')
-
-
-
-
-
-
-
-    #plt.imshow(H, cmap='plasma', interpolation='bicubic')
-
-    # axHistx.hist(hx, bins=nbins)
-    # axHisty.hist(hy, bins=nbins, orientation='horizontal')
-
-    #ax = plt.subplot(132, title='pcolormesh: actual edges',aspect='equal')
-   # X, Y = np.meshgrid(xedges, yedges)
-
-    #ax.pcolormesh(X, Y, H)
-
-    #plt.colorbar()
-
-    #plt.grid(True)
-
-    plt.show()
+    # #axHistx.xaxis.set_major_formatter(nullfmt)
+    # #axHisty.yaxis.set_major_formatter(nullfmt)
+    #
+    # #axScatter.imshow(H, cmap='plasma', extent=[np.min(x), np.max(x), np.min(y), np.max(y)])
+    #
+    # axScatter.imshow(H, cmap='plasma', extent=[0, np.max(x), 0, np.max(y)])
+    #
+    # #axHistx.hist(x, bins=xedges)#, histtype='step')
+    #
+    # #axHisty.hist(y, bins=yedges, orientation='horizontal')#, histtype='step')
+    #
+    # axHistx.set_xlim(axScatter.get_xlim())
+    # axHisty.set_ylim(axScatter.get_ylim())
+    #
+    #
+    # #plt.colorbar()
+    #
+    #
+    # plt.show()
 
 
 if __name__ == "__main__":
 
-    main(universe=u, nbins=100)
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', type=str, help='System coordinate file', required=True, dest='coords')
+    parser.add_argument('-x', type=str, help='System trajectory file', required=True, dest='traj')
+    parser.add_argument('-l', type=str, help='Lipid selection', required=True, dest='lipid')
+    args = parser.parse_args()
+
+    main(coords=args.coords, traj=args.traj, lipid_sel=args.lipid, nbins=20)
