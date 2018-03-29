@@ -208,8 +208,10 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 				#center coord in -box_dim/2 +box_dim/2 referential
 				coord_dt = coords_center_in_box(coord_dt, CoG_dt, box_size)
 
-				# coordinates of L440 at t+dt
-				coord_pt_dt = [coord_dt[440][0], coord_dt[440][1], 0]
+				# coordinates of L440 for Nav t+dt
+				# coordinates of 108 for beta3 t+dt
+
+				coord_pt_dt = [coord_dt[res_prot][0], coord_dt[res_prot][1], 0]
 
 				# angle_2D_between already returns the angle in RADIANS, don't need to convert to radians again!
 
@@ -359,17 +361,17 @@ def load_md_trajectory():
 	print("Loading trajectory.")
 	root_dir = '/sansom/n24/chavent/Big_OmpS/model/MARTINI/6x6/'
 	#universe = mda.Universe( 'start_mix6_6_M.skip10_now.gro',
-    #                ['md_prod_mix6_6_M.part1-3.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0004.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0005.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0006.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0007.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0008.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0009.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0010.skip10_now.xtc',
-    #                 'md_prod_mix6_6_M.part0011.skip10_now.xtc'])
+	#                ['md_prod_mix6_6_M.part1-3.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0004.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0005.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0006.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0007.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0008.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0009.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0010.skip10_now.xtc',
+	#                 'md_prod_mix6_6_M.part0011.skip10_now.xtc'])
 	universe = mda.Universe( 'start_mix6_6_M.skip10_now.gro',
-	                [ 'md_prod_mix6_6_M.part0011.skip10_now.xtc'])
+					[ 'md_prod_mix6_6_M.part0011.skip10_now.xtc'])
 
 
 
@@ -541,6 +543,10 @@ def plot_prot(coord, xmin, xmax, ymin, ymax, ax):
 	#ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'o',markerfacecolor='#88C578',markeredgecolor='#000000',markersize=7,alpha=0.8)
 	#OmpF
 
+	### NOTE: TO DO - MAKE THE REGION OF INTEREST PLOT AUTOMATIC, ATM YOU HAVE TO MANUALLY COMMENT THE CODE BELOW
+
+	#### PLOTTING THE NAV CHANNEL ####
+
 	regions_of_interest = [coord[89: 193], coord[395:509], coord[649: 759], coord[949: 1074]]
 	col = ['#ffffcc', '#a1dab4', '#41b6c4', '#225ea8']
 
@@ -569,7 +575,13 @@ def plot_prot(coord, xmin, xmax, ymin, ymax, ax):
 
 	ax.legend()
 
-	#ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'o',markerfacecolor='#B29007',markeredgecolor='#000000',markersize=10,alpha=0.8)
+
+	#### PLOTTING BETA3 SUBUNIT ####
+
+	# ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'.',markerfacecolor='snow', markeredgecolor='#000000',
+	# 		markersize=10,alpha=0.6, label='Beta3 EC Domain')
+    #
+	# ax.legend()
 
 	#print("coordinates plotted")
 
@@ -650,15 +662,16 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 	# ax.set_xticks(numpy.arange(xmin, xmax, ticks_x))
 	# ax.set_yticks(numpy.arange(ymin, ymax, ticks_y))
 
-
-
 	ax.set_aspect('equal')
 
-
 	max_array=max(array.flatten())
+
 	array_avg = array/max_array
-	extent = [xedges[0], xedges[-1], yedges[0], yedges[-1] ]
+
+	extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
+
 	# interesting interpolation: bicubic, lanczos see http://matplotlib.org/examples/images_contours_and_fields/interpolation_methods.html
+
 	cax= ax.imshow(array_avg.T,extent=extent,interpolation='bicubic',origin='lower',cmap=color)
 	matplotlib.pyplot.colorbar(cax)
 	#ax.plot(list_x,list_y,'o',markerfacecolor='#FC3147',markeredgecolor='#FC3147',markersize=0.8,alpha=0.8)

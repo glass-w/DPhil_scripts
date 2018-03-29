@@ -810,7 +810,7 @@ def plot_angle_avg_std(avg_array, std_array, frame_array, ax):
 
 	# definition of axes for the graph
 	ax.set_xlim([min_frame, max_frame])
-	ax.set_ylim([min_angle,max_angle])
+	ax.set_ylim([min_angle, max_angle])
 
 	ax.plot(frame_list, avg_list, color='black', ls='--')
 	ax.fill_between(frame_list, std_lower_list, std_upper_list, facecolor='yellow', alpha=0.5)

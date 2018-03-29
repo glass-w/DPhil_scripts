@@ -2,7 +2,6 @@ import MDAnalysis as mda
 import MDAnalysis.analysis.rms as rms
 import numpy as np
 from glob import glob
-import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 import os
@@ -14,7 +13,6 @@ print "Using the following versions: "
 print " "
 print "MDAnalysis " + str(mda.__version__)
 print "NumPy " + str(np.__version__)
-print "Pandas " + str(pd.__version__)
 print " "
 print "###############"
 print " "
@@ -30,7 +28,7 @@ def rmsd_calc(coord_file, traj_file, selection_phrase):
 
     rmsd = []
 
-    u.trajectory[1]
+    u.trajectory[0]
     ref = u.select_atoms(selection_phrase).positions # reference frame
 
     for i in range(len(u.trajectory)):
@@ -41,13 +39,11 @@ def rmsd_calc(coord_file, traj_file, selection_phrase):
 
         rmsd.append((u.trajectory.time, rms.rmsd(ref, bb)))
 
-        i += 1
-
-        if i == len(u.trajectory)/4:
+        if i == len(u.trajectory) / 4:
             print ("...25 %")
-        elif i == len(u.trajectory)/2:
+        elif i == len(u.trajectory) / 2:
             print ("...50 %")
-        elif i == len(u.trajectory)*(3/4):
+        elif i == (3 * len(u.trajectory) / 4):
             print ("...75 %")
         elif i == len(u.trajectory):
             print ("...100 %")
@@ -65,74 +61,82 @@ def plot(data, plot_name):
     '''A function to plot calculated RMSD data and save the image according to the .gro file input'''
 
     ax = plt.subplot(111)
-    ax.set_title(r"RMSD of $\beta$3 Trimer EC Domain - (system: " + plot_name + ")")
-    ax.plot((data[:, 0]/1000), (data[:, 1]), 'blue', lw=1.5, label=r"$R_G$", alpha=1)
-    ax.set_xlabel("Time / ns")
-    ax.set_ylabel("RMSD from t = 0 / $\AA$")
+    ax.set_title(r"RMSD of $\beta$3 Trimer")# - (system: " + plot_name + ")")
+    ax.plot((data[:, 0]/1000), (data[:, 1]), 'blue', lw=1.5, label=r"$R_G$", alpha=0.9)
+    ax.set_xlabel("Time (ns)")
+    ax.set_ylabel("RMSD ($\AA$)")
     ax.figure.savefig(plot_name.split(".g")[0] + "_RMSD.svg", format='svg')
     plt.draw()
 
-def plot_multiple():
+def plot_multiple(plot_average):
 
     files = glob("*.csv")
 
-    #print files
-
-    dataLists =[]
-
-    # for file in files:
-    #
-    #     print (file)
-
-        #dataLists[file.split(".")[0]].append(pd.read_csv(file))
-
-
     ax = plt.subplot(111)
-    ax.set_title(r"RMSD of $\beta$3 Trimer EC Domain")
+    ax.set_title(r"RMSD of $\beta$3 Trimer")
 
     # Temporary fix!
     #mean = np.mean(np.array([split_all[0], split_all[1]]), axis=0)
 
     ### Plotting ###
 
-    y_list =[]
+    y_list = []
     avg = []
 
     # plot repeats
 
+    print files
+    from numpy import genfromtxt
+
     for repeat in range(len(files)):
 
-        plot_data = np.array(pd.DataFrame(pd.read_csv(files[repeat])))
+        plot_data = genfromtxt(files[repeat], delimiter=',')
+
+        print plot_data
 
         time = plot_data[:, 0]
         rmsd = plot_data[:, 1]
 
-        ax.plot((time / 1000), rmsd, lw=1, alpha=0.25, label='Run ' + str(repeat))
+        #ax.plot((time / 1000), rmsd, lw=1, alpha=0.25, label='Run ' + str(repeat))
+
+
+        if repeat == 0:
+            label='TMD'
+
+        elif repeat == 1:
+            label='All'
+
+        elif repeat == 2:
+            label='ECD'
+
+        ax.plot((time / 1000), rmsd, lw=1, alpha=0.75, label=label)
 
         y_list.append(rmsd)
 
     # plot average line
 
-    for row in range(len(rmsd)):
+    if plot_average == "y":
 
-        # take the same particle from each repeat
-        particle_list = [item[row] for item in y_list]
+        for row in range(len(rmsd)):
 
-        # take the average over each run
-        avg.append(np.average(particle_list))
+            # take the same particle from each repeat
+            particle_list = [item[row] for item in y_list]
 
-    #rolling_mean = running_mean(avg, 100)
+            # take the average over each run
+            avg.append(np.average(particle_list))
 
-    #ax.plot(time / 1000, avg[:], lw=0.5, alpha=1, color='black', label='Average')
+        #rolling_mean = running_mean(avg, 100)
 
-    ax.plot(time / 1000, avg, lw=0.5, alpha=1, color='black', label='Average')
+        #ax.plot(time / 1000, avg[:], lw=0.5, alpha=1, color='black', label='Average')
 
-    ax.set_xlabel("Time / ns")
-    ax.set_ylabel("RMSD from t = 0 / $\AA$")
+        #ax.plot(time / 1000, avg, lw=0.5, alpha=1, color='black', label='Average')
+
+    ax.set_xlabel("Time (ns)")
+    ax.set_ylabel("RMSD ($\AA$)")
     ax.legend()
     plt.draw()
 
-    ax.figure.savefig("multiple_RMSD.svg", format='svg')
+    ax.figure.savefig("multiple_RMSD.svg", format='svg', dpi=300)
 
     print "Plot complete."
 
@@ -153,23 +157,21 @@ if __name__ == "__main__":
     parser.add_argument("-f", dest="xtc_file", type=str, help='a corrected trajectory file, pbc artifacts removed and the protein centered')
     parser.add_argument("-sel", dest="selection", type=str, help='the name of the gorup you wish to use for the RMSD calculation, e.g. "name CA"')
     parser.add_argument("-plot", dest="plot_type", type=str, help='specify whether this is a RMSD plot of one run or multiple runs, keywords are: "single" and "multiple"')
+    parser.add_argument("-avg", dest="avg_plt", type=str, help='simple y or n, this will plot an avergae of the runs if "yes"', default="n")
     options = parser.parse_args()
 
     if options.plot_type == "multiple":
 
         print "Generating multiple RMSD plots..."
-        fig = plot_multiple()
+        fig = plot_multiple(plot_average=options.avg_plt)
 
     elif options.plot_type == "single":
 
         data, title = rmsd_calc(coord_file=options.gro_file, traj_file=options.xtc_file, selection_phrase=options.selection)
+        print "Generating a single RMSD plot..."
         fig = plot(data=data, plot_name=title)
 
     else:
 
         print "You need to specify a plot type!"
         print "Use python calc_rmsd.py -h for more info"
-
-
-
-

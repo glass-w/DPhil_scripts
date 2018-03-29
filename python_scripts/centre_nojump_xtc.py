@@ -6,7 +6,7 @@ import argparse
 import progressbar
 import time
 
-def centre(gro_file, nojump_xtc_file, output_xtc, centre_type = 'CoM', skip=1):
+def centre(gro_file, nojump_xtc_file, output_xtc, centre_type = 'CoM', skip=0):
 	progressBar = progressbar.AnimatedProgressBar(end=100, width=75)
 	progressBar.show_progress()
 
