@@ -12,15 +12,15 @@ def init(coords, traj):
 
     lipid_head_group_dict = {'popc' : 'PO4', 'pope' : 'NH3', 'dpsm' : 'NC3', 'dpg3' : 'GM1', 'chol' : 'ROH', 'pops' : 'CN0', 'pop2' : 'P1'}
     lipid_group_dict = {'popc' : 'POPC', 'pope' : 'POPE', 'dpsm' : 'DPSM', 'dpg3' : 'DPG3', 'chol' : 'CHOL', 'pops' : 'POPS', 'pop2' : 'POP2'}
-    lipid_head_z_store = {'popc': {'name': 'POPC', 'z': []},
-                          'pope': {'name': 'POPE', 'z': []},
-                          'dpsm': {'name': 'DPSM', 'z': []},
-                          'dpg3': {'name': 'DPG3', 'z': []},
-                          'chol': {'name': 'CHOL', 'z': []},
-                          'pops': {'name': 'POPS', 'z': []},
-                          'pop2': {'name': 'POP2', 'z': []}}
+    lipid_info_store = {'popc': {'name': 'POPC', 'z': [], 'colour' : (0.6, 0.6, 0.6)},
+                          'pope': {'name': 'POPE', 'z': [], 'colour' : (0.30196, 0.68627, 0.290196)},
+                          'dpsm': {'name': 'Sph', 'z': [], 'colour' : (0.85, 0.60, 0.90)},
+                          'dpg3': {'name': 'GM3', 'z': [], 'colour' : (0.596078, 0.30588, 0.635294)},
+                          'chol': {'name': 'CHOL', 'z': [], 'colour' : (1, 0.4980, 0)},
+                          'pops': {'name': 'POPS', 'z': [], 'colour' : (0.6, 0.8, 1)},
+                          'pop2': {'name': 'PIP2', 'z': [], 'colour' : (1.000, 1.000, 0.000)}}
 
-    return universe, lipid_head_group_dict, lipid_group_dict, lipid_head_z_store
+    return universe, lipid_head_group_dict, lipid_group_dict, lipid_info_store
 
 def density(u, lipid_sel, lipid_heads, lipids, nbins):
 
@@ -74,6 +74,8 @@ def density(u, lipid_sel, lipid_heads, lipids, nbins):
 
 def mbrane_density(u, lipid_heads, lipid_heads_z, lipids):
 
+    print "Analysing lipids..."
+
     #u.trajectory[-1]
 
     half_box = u.dimensions[2] / 2
@@ -82,21 +84,18 @@ def mbrane_density(u, lipid_heads, lipid_heads_z, lipids):
 
         u.trajectory[frame]
 
+        print frame
+
         for lipid in lipids:
-            print lipid
 
             sel = "resname " + str(lipids[lipid]) + " and (name " + str(lipid_heads[lipid] + ")")
 
-            print sel
-
             L = LeafletFinder(universe=u, selectionstring=sel, pbc=False)
-
-            print L
 
             leaflet_upper = L.groups(0)
             leaflet_lower = L.groups(1)
 
-            com_upper = leaflet_upper.center_of_geometry()
+            #com_upper = leaflet_upper.center_of_geometry()
 
             for particle in range(len(leaflet_upper)):
                 lipid_heads_z[lipid]['z'].append(leaflet_upper[particle].position[2])
@@ -138,7 +137,7 @@ def plot_2D(lipid_selection, lipid_dict, data, plot_edges):
 
     plt.clf()
 
-def plot_1D(u, z_data, nbins):
+def plot_1D(u, z_data, nbins, lipid_information):
 
     # PLOT 1D CROSS SEC
 
@@ -161,7 +160,7 @@ def plot_1D(u, z_data, nbins):
 
             x = np.linspace(0, (u.dimensions[2] / 10), nbins)
 
-            ax.plot(density(x), x, label=lipid, alpha=0.75)
+            ax.plot(density(x), x, label=lipid_info[lipid]['name'], alpha=0.75, color=lipid_info[lipid]['colour'], lw=2)
             # ax.axhline(u.dimensions[2] / 20)
 
             #ax.hist(z_data[lipid]['z'], histtype='stepfilled', orientation='horizontal', bins=nbins, label=lipid)
@@ -185,7 +184,8 @@ def plot_1D(u, z_data, nbins):
 
     ax.legend()
 
-    plt.savefig("Densityavg_" + str(args.p1d_selection), dpi=300)
+    extension = '.svg'
+    plt.savefig("Densityavg_" + str(args.p1d_selection) +str(extension), dpi=300, format='svg')
 
     plt.show()
     plt.clf()
@@ -197,23 +197,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', type=str, help='System coordinate file', required=True, dest='coords')
     parser.add_argument('-x', type=str, help='System trajectory file', required=True, dest='traj')
-    parser.add_argument('-l', type=str, help='Lipid selection - for example popc, pope, dpsm, chol etc',
+    parser.add_argument('-l', type=str, help='Lipid selection - for example popc, pope, dpsm, chol etc - not needed atm',
                         required=False, dest='lipid')
     parser.add_argument('-p', type=str, help='Plot type: 2D histogram of density over all frames = "2d". 1D cut of z-axis of last frame = 1d', required=True, dest='plot')
     parser.add_argument('-p1d_sel', type=str, help='If plotting 1D plot, choose the lipid you want to plot e.g. "popc", default = "all"', default='all', dest='p1d_selection')
     args = parser.parse_args()
 
-    universe, lipid_heads, lipids, lipid_heads_z = init(coords=args.coords, traj=args.traj)
+    universe, lipid_heads, lipids, lipid_info = init(coords=args.coords, traj=args.traj)
 
     if args.plot == '2d':
 
         lipid_sel, twoD_density_data, twoD_plot_edges = density(u=universe, lipid_heads=lipid_heads, lipids=lipids, lipid_sel=args.lipid, nbins=20)
 
-        plot_2D(lipid_selection=lipid_sel, lipid_dict=lipids, data = twoD_density_data, plot_edges=twoD_plot_edges)
+        plot_2D(lipid_selection=lipid_sel, lipid_dict=lipids, data=twoD_density_data, plot_edges=twoD_plot_edges)
 
     elif args.plot == '1d':
 
-        lipid_z_data = mbrane_density(u=universe, lipid_heads=lipid_heads, lipid_heads_z=lipid_heads_z, lipids=lipids)
+        lipid_z_data = mbrane_density(u=universe, lipid_heads=lipid_heads, lipid_heads_z=lipid_info, lipids=lipids)
 
-        plot_1D(u=universe, z_data=lipid_z_data, nbins=5000)
+        plot_1D(u=universe, z_data=lipid_z_data, nbins=5000, lipid_information=lipid_info)
 

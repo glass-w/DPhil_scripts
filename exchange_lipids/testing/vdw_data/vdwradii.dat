@@ -1,0 +1,57 @@
+; approximate VanderWaals radii
+; only used for drawing atoms as balls or for calculating atomic overlap.
+; longest matches are used
+; '???' or '*' matches any residue name
+; 'AAA' matches any protein residue name
+POPC  C1     0.7
+POPC  C3     0.7
+POPE  C1     0.7
+POPE  C3     0.7
+POPS  C1     0.7
+POPS  C3     0.7
+POPG  C1     0.7
+POPG  C3     0.7
+DPPC  C1     0.7
+DHPC  C1     1.3
+DLPC  C1     1.3
+DUPC  C1     0.7
+DUPC  C4     0.7
+PPCS  C1     0.7
+PPCS  C3     0.7
+DPPE  C1     0.7
+DHPE  C1     1.3
+DLPE  C1     1.3
+DOPC  C1     0.7
+DOPC  C3     0.7
+DSPC  C1     0.7
+DAPC  C4     0.7
+DSPC  C2     0.7
+DSPE  C1     0.7
+DOPE  C1     0.7
+DOPG  C3     0.7
+DOPS  C1     0.7
+DOPS  C3     0.7
+GM3   C1     0.7
+GM3  C3     0.7
+PIP2  C1     0.7
+PI3   C1     0.7
+CHOL  C1     0.7
+CHOL  SC1     0.7
+POPA  C1     0.7
+POPA  C3     0.7
+PVPG  C1     0.7
+PVPG  C3     0.7
+PVPE  C1     0.7
+PVPE  C3     0.7
+DAG   C1     0.7
+DAG   C3     0.7
+PVPA  C1     0.7
+PVPA  C3     0.7
+CERA  C1     0.7
+CERA  C3     0.7
+* BB   0.27
+* SC1   0.27
+* SC2   0.27
+* SC3   0.27
+* SC4   0.27
+  

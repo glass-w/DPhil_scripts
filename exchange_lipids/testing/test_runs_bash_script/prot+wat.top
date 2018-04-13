@@ -1,0 +1,14 @@
+#include "martini_v2.1.itp"
+#include "protein.itp"
+#include "martini_v2.0_lipids_WG.itp"
+#include "martini_v2.0_ions.itp"
+
+
+[ system ]
+MIXED-LIPID
+
+[ molecules ]
+PROTEIN 1
+POPC 628
+GM3 70
+W 22755

@@ -1,0 +1,11 @@
+#include "martini_v2.1.itp"
+#include "PROTEIN-ITP"
+#include "martini_v2.0_lipids_WG.itp"
+#include "martini_v2.0_ions.itp"
+
+
+[ system ]
+MIXED-LIPID
+
+[ molecules ]
+PROTEIN PROTNUM

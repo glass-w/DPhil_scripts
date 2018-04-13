@@ -1,0 +1,5 @@
+; position restraints for BB of Martini system from WT_PR100_r0_protein_coords.gro
+
+[ position_restraints ]
+;  i funct       fcx        fcy        fcz
+900    1       1000       1000       1000

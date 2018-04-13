@@ -1,0 +1,21 @@
+#include "martini.itp"
+    
+#define RUBBER_BANDS
+  
+#include "Protein_A.itp"
+
+#include "POPC_martini.itp"
+
+#include "ions.itp"
+    
+[ system ]
+; name
+Martini system from WT_PR100_r0_protein_coords.gro
+    
+[ molecules ]
+; name        number
+Protein_A 	 1
+POPC		698
+W           23307
+NA               385
+CL               370

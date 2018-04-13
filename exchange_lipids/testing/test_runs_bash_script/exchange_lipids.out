@@ -1,0 +1,1 @@
+input was: sh run_exchange_lipids.sh -np 1 -top protein.itp -f minimisation_solvated_system.gro -ut POPC:GM3 -uc 90:10 -lt POPC:GM3 -lc 90:10   

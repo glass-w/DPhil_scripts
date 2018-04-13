@@ -22,7 +22,7 @@ then
 
 for i in {0..3} ; do
 
-        gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME"_r"$i".tpr -maxwarn 1
+        gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME"_r"$i".tpr -maxwarn 2
 
 done
 
@@ -30,7 +30,7 @@ fi
 
 for i in {0..3} ; do
 
-	gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME"_r"$i".tpr -maxwarn 1
+	gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME"_r"$i".tpr -maxwarn 2
 
 done
 

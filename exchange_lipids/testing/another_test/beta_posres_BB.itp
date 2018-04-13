@@ -1,0 +1,5 @@
+;position restraints for a_133 of Martini system from b3_ig_r0_AT.pdb
+
+[ position_restraints ]
+;  i funct       fcx        fcy        fcz
+ 133    1       1000       1000       1000

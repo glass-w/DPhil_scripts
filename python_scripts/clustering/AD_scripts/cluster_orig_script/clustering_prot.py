@@ -2649,7 +2649,8 @@ def graph_interactions_residues_2D():
 				filename_svg = os.getcwd() + '/' + str(args.output_folder) + '/2_proteins_interactions/2_interactions_residues_' + str(proteins_names[s1]) + '-' + str(proteins_names[s2]) + '_2D.svg'
 				#create general figure
 				#-------------
-				fig = plt.figure(figsize=(8,8))
+				#fig = plt.figure(figsize=(8,8))
+				fig = plt.figure(figsize=(15, 15))
 				fig.suptitle("Most significant interactions between " + str(proteins_names[s1]) + " and " + str(proteins_names[s2]))
 				#heatmap
 				ax_heatmap = plt.axes([0.095, 0.15, 0.6, 0.6])
@@ -2681,8 +2682,11 @@ def graph_interactions_residues_2D():
 				#heatmap
 				ax_heatmap.set_xlim([0, np.shape(tmp_s1s2_plot)[1]])
 				ax_heatmap.set_ylim([0, np.shape(tmp_s1s2_plot)[0]])
-				ax_heatmap.set_xlabel(str(proteins_names[s2]) + ' residues', fontsize="small")
-				ax_heatmap.set_ylabel(str(proteins_names[s1]) + ' residues', fontsize="small")
+				# ax_heatmap.set_xlabel(str(proteins_names[s2]) + ' residues', fontsize="small")
+				# ax_heatmap.set_ylabel(str(proteins_names[s1]) + ' residues', fontsize="small")
+
+				ax_heatmap.set_xlabel(r"$\beta 3$ residues", fontsize=26)
+				ax_heatmap.set_ylabel(r"$\alpha$ residues", fontsize=26)
 				#bar charts
 				ax_bar_top.set_ylim([0, tmp_s2_max])
 				ax_bar_top.set_xlim([0, np.shape(tmp_s1s2_plot)[1]])
@@ -2697,38 +2701,38 @@ def graph_interactions_residues_2D():
 				ax_heatmap.set_yticks(np.arange(0.5, len(s1_labels) + 0.5))
 				ax_heatmap.set_xticklabels(s2_labels, rotation = 90)
 				ax_heatmap.set_yticklabels(s1_labels)
-				plt.setp(ax_heatmap.xaxis.get_majorticklabels(), fontsize="xx-small" )
-				plt.setp(ax_heatmap.yaxis.get_majorticklabels(), fontsize="xx-small" )
+				plt.setp(ax_heatmap.xaxis.get_majorticklabels(), fontsize="medium" )
+				plt.setp(ax_heatmap.yaxis.get_majorticklabels(), fontsize="medium" )
 				#bar charts
 				ax_bar_top.xaxis.set_major_formatter(NullFormatter())
 				ax_bar_top.spines['top'].set_visible(False)
 				ax_bar_top.spines['right'].set_visible(False)
 				ax_bar_top.xaxis.set_ticks_position('bottom')
 				ax_bar_top.yaxis.set_ticks_position('left')
-				plt.setp(ax_bar_top.xaxis.get_majorticklabels(), fontsize="xx-small" )
-				plt.setp(ax_bar_top.yaxis.get_majorticklabels(), fontsize="xx-small" )
+				plt.setp(ax_bar_top.xaxis.get_majorticklabels(), fontsize="medium" )
+				plt.setp(ax_bar_top.yaxis.get_majorticklabels(), fontsize="medium" )
 
 				ax_bar_right.yaxis.set_major_formatter(NullFormatter())
 				ax_bar_right.spines['top'].set_visible(False)
 				ax_bar_right.spines['right'].set_visible(False)
 				ax_bar_right.xaxis.set_ticks_position('bottom')
 				ax_bar_right.yaxis.set_ticks_position('left')
-				plt.setp(ax_bar_right.xaxis.get_majorticklabels(), fontsize="xx-small" )
-				plt.setp(ax_bar_right.yaxis.get_majorticklabels(), fontsize="xx-small" )
+				plt.setp(ax_bar_right.xaxis.get_majorticklabels(), fontsize="medium" )
+				plt.setp(ax_bar_right.yaxis.get_majorticklabels(), fontsize="medium" )
 				#colour bar
 				#----------
 				#heatmap
 				heatmap_cbar = fig.colorbar(p, cax = ax_heatmap_cbar, orientation = 'horizontal')
-				heatmap_cbar.set_label('interactions accounted for by residues pairs (%)', size = 9)
+				heatmap_cbar.set_label('Interactions accounted for by residues pairs (%)', size = 24)
 				#heatmap_cbar.formatter.set_powerlimits((0, 0))
-				heatmap_cbar.ax.tick_params(labelsize = 7)
+				heatmap_cbar.ax.tick_params(labelsize = 14)
 				heatmap_cbar.update_ticks()
 				#bar charts
 				scalar_map.set_array(tmp_s1s2_max)
 				bar_cbar = plt.colorbar(scalar_map, cax = ax_bar_cbar)				
-				bar_cbar.set_label('interactions accounted for by residues (%)', size = 9)
+				bar_cbar.set_label('Interactions accounted for by residues (%)', size = 24)
 				#bar_cbar.formatter.set_powerlimits((0, 0))
-				bar_cbar.ax.tick_params(labelsize = 7)
+				bar_cbar.ax.tick_params(labelsize = 14)
 				bar_cbar.update_ticks()
 			
 				#save general figure

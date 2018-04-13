@@ -20,7 +20,7 @@
 #                                                       #
 #########################################################
 echo "$# arguments"
-if [ "$#" -lt 10 ] 
+if [ "$#" -lt 10 ]
         then
         echo ""
         echo ""
@@ -58,10 +58,10 @@ if [ "$#" -lt 10 ]
         echo "-np               : Number of proteins"
         echo "-top              : Protein itp file [protein-cg.itp]. If no protein type [none]"
         echo "-f                : System gro file "
-        echo "-ut               : Topology of upper leaflet  [e.g. POPC:PPCS:DPPC]"       
-        echo "-uc               : Composition of upper leaflet  [e.g. 50:20:30]"      
-	echo "-lt               : Topology of lower leaflet  [e.g. POPC:POPG:POPS]"       
-        echo "-lc               : Composition of lower leaflet  [e.g. 70:10:20]"      
+        echo "-ut               : Topology of upper leaflet  [e.g. POPC:PPCS:DPPC]"
+        echo "-uc               : Composition of upper leaflet  [e.g. 50:20:30]"
+	echo "-lt               : Topology of lower leaflet  [e.g. POPC:POPG:POPS]"
+        echo "-lc               : Composition of lower leaflet  [e.g. 70:10:20]"
 	echo "-lip (optional)	: Lipid input (Can be POPC (default), POPS, POPE, POPG, PVPG, PVPE  "
 	echo ""
 	echo ""
@@ -272,9 +272,9 @@ architecture=`uname -m`
                 #       Run the tcl script thorugh vmd                  #
                 #                                                       #
                 #########################################################
- 		echo "vmdinput is: $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16}"               
+ 		echo "vmdinput is: $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16}"
                 $vmddir -dispdev text -e /sansom/s105/bioc1280/Simulations/Tools/exchange_lipid/exchange_lipids_morelipids.tcl -args $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16}
-                
+
 
 		#########################################################
                 #                                                       #
@@ -286,15 +286,15 @@ architecture=`uname -m`
 		#################################################
 		# Get the complete list of lipid types		#
 		################################################
-		
+
 		updownlist="$up_liplist $down_liplist"
-	
+
 		#################################################
                 # Get the complete list of lipid types          #
                 ################################################
 
                 tail -1 $grofile > boxdim.dat
-		
+
 		#########################################################
 		#							#
                 # 	If protein is present put the protein in the 	#
@@ -304,7 +304,7 @@ architecture=`uname -m`
 		#							#
                 #########################################################
 	#	if [ -f PROTEIN.pdb ]; then
-		if [ "$protnum" -gt "0" ]; then 
+		if [ "$protnum" -gt "0" ]; then
 		cp PROTEIN.pdb exchange_lipids.pdb
 		# ALD 3/4/2014 - shouldn't need to have a top file that is any different from Heidi's - using Martinize v2.4 there is not need to define RUBBER_BANDS
 		#sed -e "s|PROTEIN-ITP|$protein_itp|g;s|PROTNUM|$protnum|g" /sansom/s105/bioc1280/Simulations/Tools/exchange_lipids_protein.top > exchange_lipids.top
@@ -315,15 +315,15 @@ architecture=`uname -m`
 		echo "CRYST1  225.221  225.221  110.042  90.00  90.00  90.00 P 1           1" > exchange_lipids.pdb
 		cp /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/topol_noprotein.top exchange_lipids.top
 		fi
-		
+
                 cp -r /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/mdp-files/*.itp .
 		cp /sansom/s105/bioc1280/Simulations/Kir2_2/lipid_itp_files/inhouse_PI.itp .
 		#include inhouse_PI into the topology file
 		sed -i "s/#include \"martini_v2.0_lipids.itp\"/#include \"martini_v2.0_lipids.itp\"\n#include \"inhouse_PI.itp\"/g" exchange_lipids.top
-		
+
 		#########################################################
                 #                                                       #
-                #      	For all lipids get number of lipid and print to	# 
+                #      	For all lipids get number of lipid and print to	#
 		#	topology file and cat the pdb-files together    #
                 #       and put the number of proteins in the top file  #
                 #                                                       #
@@ -334,7 +334,7 @@ architecture=`uname -m`
 			#########################################################
 	                #                                                       #
         	        #  Cat togeher pdb-files from lipids which have been 	#
-			#  aligned instead of exchanged within the tcl script 	# 
+			#  aligned instead of exchanged within the tcl script 	#
         	        #                                                       #
 	                #########################################################
 		if [ -f ${lip}_0001.pdb ]; then
@@ -343,7 +343,7 @@ architecture=`uname -m`
 			cat ${lip}_*.pdb | grep ATOM > ${lip}.pdb
 			cp ${lip}.pdb TEST.pdb
 			rm ${lip}_*.pdb
-		     fi	
+		     fi
 		   fi
 			#########################################################
                         #                                                       #
@@ -355,11 +355,11 @@ architecture=`uname -m`
 		  	if [ -f ${lip}.pdb ] && [ "$lip" != "CHOL" -a "$lip" != "PIP2" -a "$lip" != "PIP3" -a "$lip" != "GM3" -a "$lip" != "GM3P" -a "$lip" != "GM3C" -a "$lip" != "CERA" -a "$lip" != "GM1" -a "$lip" != "DPPI"  -a "$lip" != "PSPI"  ]; then
 				echo "putting lipid=$lip"
 				lipnum=`grep "PO4 ${lip}" ${lip}.pdb | wc -l`
-				echo "$lip $lipnum" >> exchange_lipids.top			
+				echo "$lip $lipnum" >> exchange_lipids.top
  		  	fi
 			#################################################################
                         #                                                               #
-                        #       Test if cholesterol is present?                         # 
+                        #       Test if cholesterol is present?                         #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -370,7 +370,7 @@ architecture=`uname -m`
 
 			#################################################################
 			#                                                               #
-                        #       Test if ceramide is present?                         # 
+                        #       Test if ceramide is present?                         #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -381,7 +381,7 @@ architecture=`uname -m`
 
 			#################################################################
                         #                                                               #
-                        #       Test if gm3 is present? 	                        # 
+                        #       Test if gm3 is present? 	                        #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -394,7 +394,7 @@ architecture=`uname -m`
 
 			#################################################################
                         #                                                               #
-                        #       Test if gm3p (uncharged gm3) is present?                                 # 
+                        #       Test if gm3p (uncharged gm3) is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -408,7 +408,7 @@ architecture=`uname -m`
 
 			#################################################################
                         #                                                               #
-                        #       Test if gm3c (same as gm3) is present?                                 # 
+                        #       Test if gm3c (same as gm3) is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -422,7 +422,7 @@ architecture=`uname -m`
 
 			 #################################################################
                         #                                                               #
-                        #       Test if gm1 is present?                                 # 
+                        #       Test if gm1 is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -436,17 +436,17 @@ architecture=`uname -m`
 
 			#################################################################
                         #                                                               #
-                        #       Test if pip2 is present?                                 # 
+                        #       Test if pip2 is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
 			if [ "$lip"  = "PIP2" ]  && [ -f ${lip}.pdb ]; then
                                 lipnum=`grep "PO3 PIP" ${lip}.pdb | wc -l`
                                 echo "PIP2 $lipnum" >> exchange_lipids.top
-                        fi	
+                        fi
 			#################################################################
                         #                                                               #
-                        #       Test if pip3 is present?                                 # 
+                        #       Test if pip3 is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -458,7 +458,7 @@ architecture=`uname -m`
 
 			#################################################################
                         #                                                               #
-                        #       Test if pi is present?                                 # 
+                        #       Test if pi is present?                                 #
                         #       -if yes: count number of molecules and cat together     #
                         #                                                               #
                         #################################################################
@@ -472,7 +472,7 @@ architecture=`uname -m`
                                 echo "PSPI $lipnum" >> exchange_lipids.top
                         fi
 
-		
+
 		  	### move exchange_lipid file to a tmp file
                        mv exchange_lipids.pdb tmp.pdb
 
@@ -522,14 +522,14 @@ architecture=`uname -m`
         	                                	do
 							echo "`cat ${lip}_tmp.pdb | head -$(($k + 4 )) | tail -4`" >> ${lip}.pdb
 							echo "`cat ${lip}_tmp.pdb | head -$(($k + 8 )) | tail -2`" >> ${lip}.pdb
-							echo "`cat ${lip}_tmp.pdb | head -$(($k + 6 )) | tail -2`" >> ${lip}.pdb 
+							echo "`cat ${lip}_tmp.pdb | head -$(($k + 6 )) | tail -2`" >> ${lip}.pdb
 	                                                k=$(($k + 8))
-							
+
 	                        	        done
 						 rm ${lip}_tmp.pdb
 
 					fi
-	
+
 				#########################################
         	                #                                       #
                                 #       Test for 10 bead long lipids    #
@@ -589,10 +589,10 @@ architecture=`uname -m`
 				rm ${lip}.pdb
 				i=$(($i +1))
 
-			fi	
-		done	
+			fi
+		done
 
-		editconf -f exchange_lipids.pdb -c -o exchange_lipids.gro
+		gmx_sse editconf -f exchange_lipids.pdb -c -o exchange_lipids.gro
 		line=`cat exchange_lipids.gro | wc -l`
 		line=$(($line - 1))
 		head -$line exchange_lipids.gro > exchange_lipids_short.gro
@@ -600,27 +600,27 @@ architecture=`uname -m`
 		#try out different vdwradii.dat file: ald 4/2014
 		cp /sansom/s105/bioc1280/Simulations/Tools/exchange_lipid/vdwradii.dat .
 		#cp /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/vdwradii.dat .
-		genbox -cp prot+lipid.gro -cs /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS_TESTING/wat.pdb -vdwd 0.21 -o prot+lipid+wat.pdb
+		gmx_sse genbox -cp prot+lipid.gro -cs /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS_TESTING/wat.pdb -vdwd 0.21 -o prot+lipid+wat.pdb
 
                 #comment out line below to keep a record of the vdwradii.dat file used - ald 4/2014
-		#rm vdwradii.dat 
+		#rm vdwradii.dat
 		#################################################################
                 #                                                               #
                 #       Count number of water and cat together     		#
                 #                                                               #
                 #################################################################
 		watnum=`grep "W     W"  prot+lipid+wat.pdb | wc -l `
-		echo "W $watnum" >> exchange_lipids.top 
-			
+		echo "W $watnum" >> exchange_lipids.top
+
 		cp exchange_lipids.top prot+wat.top
 		#########################################################
                 #                                                       #
                 #      Make a grofile from the pdbfile                  #
                 #                                                       #
                 #########################################################
-	
-		editconf -f prot+lipid+wat.pdb -c -o prot+lipid+wat.gro 
-		
+
+		gmx_sse editconf -f prot+lipid+wat.pdb -c -o prot+lipid+wat.gro
+
 		#########################################################
                 #                                                       #
                 #       Copy the em.mdp to this directory and 		#
@@ -628,11 +628,11 @@ architecture=`uname -m`
                 #                                                       #
                 #########################################################
 
-		##### Anna Duncan - don't copy em.mdp - use em.mdp 
+		##### Anna Duncan - don't copy em.mdp - use em.mdp
 		cp /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/em.mdp .
 		#cp -r /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/mdp-files/*.itp . ###Think I put this here erroneously on the first try - AlD
-		grompp -f em.mdp -maxwarn 5 -c prot+lipid+wat.gro -p exchange_lipids.top -o em.tpr
-		
+		gmx_sse gmx_sse grompp -f em.mdp -maxwarn 5 -c prot+lipid+wat.gro -p exchange_lipids.top -o em.tpr
+
 		#########################################################
                 #                                                       #
                 #       Generate random number for ioniziation          #
@@ -643,7 +643,7 @@ architecture=`uname -m`
 
 		#########################################################
                 #                                                       #
-                #       Ionize the system to a 0.15 M NaCl		# 
+                #       Ionize the system to a 0.15 M NaCl		#
 		#	concentration 					#
                 #                                                       #
                 #########################################################
@@ -657,7 +657,7 @@ architecture=`uname -m`
 		genion -s em.tpr -seed $RANDOM -o tmp1.gro -neutral -conc 0.15 << EOF
 $watergrp
 EOF
-	
+
 		#########################################################
                 #                                                       #
                 #       Change the ion residue names to ION             #
@@ -665,7 +665,7 @@ EOF
                 #########################################################
 
 		sed -e "s|NA      NA|ION    NA+|g;s|CL      CL|ION    CL-|g" tmp1.gro > exchange_lipids_sys.gro
-		
+
 		#########################################################
                 #                                                       #
                 #       Get the number of NA+ and CL- and the new 	#
@@ -677,7 +677,7 @@ EOF
 		newwat=`grep "W " exchange_lipids_sys.gro | wc -l `
                 nanum=`grep "NA+" exchange_lipids_sys.gro | wc -l `
                 clnum=`grep "CL-" exchange_lipids_sys.gro | wc -l`
-		echo "NA+ $nanum" >> exchange_lipids.top		
+		echo "NA+ $nanum" >> exchange_lipids.top
 		echo "CL- $clnum" >> exchange_lipids.top
 
 		cp  exchange_lipids.top tmp.top
@@ -701,12 +701,12 @@ EOF
 	###########
 	#
 	#	test if lip=PIP3 because then renaming is necessary:
-	#	
+	#
 	###############################
 	if [ "$lip"  = "PIP3" ]; then
 		lip=PI3
-	fi	
-	
+	fi
+
 	make_ndx -f exchange_lipids_sys.gro -o sys.ndx << EOF
 del 3-30
 r${lip}|rPOP*|rPI*|rDHP*|rDPP*|rDMP*|rDOP*|rBOG*|rCHO*|rDDM*|rDSP*|rTOC*|rCAR*|rDLP*|rSQD*|rDGD*|rLMG*|rGM*|rPPCS|rDUPC|rPVP*|rDAP*|rDAG|rCERA|rPCS|rDPPI|rPSPI
@@ -721,13 +721,13 @@ EOF
                 #       Make new tpr file and run energy minimzation    #
                 #                                                       #
                 #########################################################
-		grompp -f em.mdp -maxwarn 5 -c exchange_lipids_sys.gro -n sys.ndx -p system.top -o em.tpr
+		gmx_sse grompp -f em.mdp -maxwarn 5 -c exchange_lipids_sys.gro -n sys.ndx -p system.top -o em.tpr
 
-		mdrun_d -v -deffnm exchange_lipid_system -s em.tpr
+		gmx_sse mdrun -v -deffnm exchange_lipid_system -s em.tpr
 		info=`grep "inf " exchange_lipid_system.log`
 	##### Test if minimization was okay?
 		if [ "$info" != "" ]
-			then 
+			then
 			echo ""
 			echo "Sorry!!"
 			echo ""
@@ -741,8 +741,8 @@ EOF
 	if [ "$info" = "" ]
 		then
 		#cp /sansom/s91/bioc1127/gp130/SCRIPTS/EXCHANGE_LIPIDS/eq.mdp .
-		#		grompp -f eq.mdp -po eqout.mdp -c exchange_lipid_system.gro -n sys.ndx -p system.top -o eq.tpr -maxwarn 5
-	editconf -f exchange_lipid_system.gro -o exchange_lipid_system.pdb	
+		#		gmx_sse grompp -f eq.mdp -po eqout.mdp -c exchange_lipid_system.gro -n sys.ndx -p system.top -o eq.tpr -maxwarn 5
+	gmx_sse editconf -f exchange_lipid_system.gro -o exchange_lipid_system.pdb
 #### Clean up
 rm  W.pdb tmp.top tmp.pdb tmp1.gro PROTEIN.pdb mdout.mdp genion.log exchange_lipids.gro exchange_lipids.pdb exchange_lipids.top exchange_lipids_sys.gro
 

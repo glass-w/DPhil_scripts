@@ -1,0 +1,23 @@
+#include "martini_v2.1.itp"
+#define RUBBER_BANDS
+
+#include "protein_nav.itp"
+
+#include "Protein_beta3.itp"
+
+
+#include "martini_v2.0_lipids_WG.itp"
+#include "martini_v2.0_ions.itp"
+    
+[ system ]
+; name
+Martini system from WT_PR100_r0_protein_coords.gro
+    
+[ molecules ]
+; name        number
+Protein_nav 	 1
+Protein_beta3    4
+POPC		4144
+W           119539
+NA               1860
+CL               1813

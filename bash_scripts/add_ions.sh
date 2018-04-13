@@ -13,6 +13,8 @@ gmx_sse solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro -p $TOPFILE
 cp $TOPFILE topol_solvated.top
 TOPFILE_SOLV="topol_solvated.top"
 
+mv vdwradii.dat vdwradii.dat.used
+
 # add ions 
 
 gmx_sse grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -o minimisation_solvated_system.tpr
