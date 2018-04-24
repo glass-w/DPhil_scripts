@@ -41,6 +41,7 @@ def find_prot_residues(res_total, residue_list, nrepeats):
 
 def make_split_list_single_prot(prot_seq, ff_ressize_dict=martini_residuesymbol_size):
 
+
     splitlist_single = []
 
     counter = 0
@@ -87,11 +88,13 @@ lipid_particles = {
 			'POPE' : ['PO4']}}
 
 ### main function to count interactions and produce interactions file ###
-def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepeats, lipid, stride=1, lipid_part='headgroup', protein_centre='centroid', protein_centre_cutoff= 60, cutoff=6.5):
+def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepeats, lipid, stride=1000, lipid_part='headgroup', protein_centre='centroid', protein_centre_cutoff= 60, cutoff=6.5):
 
+	print "here!"
 	universe = MDAnalysis.Universe(gro_file, trr_file)
 
 	protein_res_total = len(prot_seq)
+	#print protein_res_total
 	protein_residue_dictionary = find_prot_residues(protein_res_total, protein_residue_list, nrepeats)
 	prot_split = make_split_list_single_prot(prot_seq)
 	#print prot_split
@@ -114,34 +117,55 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 	startTime = time.time()    
 	print 'Here we go...'
 	frame = 0
+	print len(universe.trajectory)
 	for ts in universe.trajectory[::stride]:
+
 		for i in range(nrepeats):
-			single_prot = universe.segments[0][range(i*protein_res_total,(i+1)*protein_res_total)]
+
+			single_prot = universe.segments[0][range(i*protein_res_total, (i+1)*protein_res_total)]
 			# find protein centroid - or pick out residue to represent protein position
 			if protein_centre == 'centroid':
 				single_prot_cent = numpy.array([single_prot.centroid()])
+
 			elif (protein_centre) == int:
 				#pick out BB of specified residue
 				single_prot_cent = universe.segments[0][i*protein_res_total + protein_centre-1][0] # -1 is because res numbers are zero-indexed
+
 			else:
 				print 'Error: protein_centre should either be an integer residue number, or "centroid"'
 				return None
 			# find lipids within 60 A of prot centroid and pick those out from lipids selection
 			close = distance_array(single_prot_cent, lipid_reps.coordinates(), ts.dimensions) < protein_centre_cutoff
 			lipids_close_indices = []
-			for index in numpy.nonzero(close)[1]: # numpy.nonzero gives a tuple of arrays - the second gives the indices of lipid residues that are 'close' to the protein
+
+			for index in numpy.nonzero(close)[1]: 											# numpy.nonzero gives a tuple of arrays - the second gives the indices of lipid residues that are 'close' to the protein
 				lipids_close_indices += range(index*n_lipid_beads, (index+1)*n_lipid_beads) # convert residue IDs to atoms IDs for 'close' lipids
+
 			lipids_close = lipids[lipids_close_indices]
 			n_lipids_close = sum(close.flatten())
 			# now look at prot-lipid interaction on per residue level
+
 			if n_lipids_close == 0:
 				continue # ie. nothing is added to proteinres_lipid_interactions
+
 			else:
 				all_dists = distance_array(single_prot.coordinates(), lipids_close.coordinates(), ts.dimensions)
 
-				print all_dists
+				# print n_lipids
+				# print n_lipids_close
 
 				protein_lipid_dist_perresidue_all = numpy.array([[x.min() for x in numpy.split(lip, prot_split, axis=0)] for lip in numpy.split(all_dists, n_lipids_close, axis=1)])
+
+				# Below = checking what the above is doing...
+				# for lip in numpy.split(all_dists, n_lipids_close, axis=1):
+                #
+				# 	for i, x in enumerate(numpy.split(lip, prot_split, axis=0)):
+                #
+				# 		print i, len(lip), x.min()
+
+
+
+
 				#print protein_lipid_dist_perresidue_all[:,17]
 				interactions = protein_lipid_dist_perresidue_all <= cutoff
 				proteinres_lipid_interactions += numpy.sum(interactions, axis = 0) # sum over all lipids for each res
@@ -153,6 +177,7 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 		frame += 1
 		print 'Frame {} took {:3f} s'.format(frame, time.time()-startTime)
 		startTime = time.time()
+		break
 	proteinres_lipid_interactions_dict = dict( zip(protein_residue_list, proteinres_lipid_interactions) )
 	print proteinres_lipid_interactions_dict
 	return proteinres_lipid_interactions_dict
@@ -161,23 +186,33 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 def plot_frequencies(protein_residue_list, proteinres_lipid_interactions):
     plt.bar(protein_residue_list, [proteinres_lipid_interactions[res] for res in protein_residue_list])
     plt.show()
-            
-def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Kir2.2_3spi', cutoff=True, cutoff_value=0.025):
+
+
+#Kir2.2_3spi
+
+def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Nav1.5_alpha', cutoff=True, cutoff_value=0.025):
 	protein_residue_array = numpy.array(protein_residue_list)
 	actual_res_numbers =  protein_residue_array + 40
 	actual_res_namenums = numpy.core.defchararray.add(numpy.array(list(protein_info[prot]['protein_seq'])), get_real_resnums_strlist(prot))
+
 	def percent_interactions(proteinres_lipid_interactions):
+
 		total_interactions = sum(proteinres_lipid_interactions.values())
 		interactions_list = []
+
 		for res in protein_residue_list:
 			interactions_list.append(float(proteinres_lipid_interactions[res]))
 		interactions_array = numpy.array(interactions_list)
 		percent_interactions = interactions_array*100/total_interactions
+
 		return percent_interactions
+
 	percent_interactions_dict = {}
 	lipid_list = sorted(proteinres_lipid_interactions_dict.keys())
+
 	for lipid in lipid_list:
 		percent_interactions_dict[lipid] = percent_interactions(proteinres_lipid_interactions_dict[lipid])
+
 	if cutoff:
 		# graph will include ANY residue that has more than <<cutoff>> interactions for ANY lipid
 		over_cutoff = numpy.zeros(shape=len(protein_residue_list), dtype=bool)
@@ -186,6 +221,7 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 		for lipid in lipid_list:
 			percent_interactions_dict[lipid] = percent_interactions_dict[lipid][over_cutoff]
 		actual_res_namenums = actual_res_namenums[over_cutoff]
+
 	fig, ax = plt.subplots()
 	#rects=ax.barh(range(len(percent_interactions)), percent_interactions, align='center' , color='yellow')
 	#ax.invert_xaxis()
@@ -262,8 +298,17 @@ def make_res_list(res_string, protname):
 	return res_list
 def make_interactions_dict(dictionary_filename):
 	f = open(dictionary_filename)
-	dictionary_string = f.readlines()[2].rstrip()
-	proteinres_lipid_interactions = ast.literal_eval(dictionary_string)
+
+	# for line in f.readlines():
+	# 	print line
+
+	line = f.readlines()[2]
+
+	print line.rstrip()
+	#dictionary_string = f.readlines()[2].rstrip()
+	#proteinres_lipid_interactions = ast.literal_eval(dictionary_string)
+	proteinres_lipid_interactions = ast.literal_eval(line.rstrip())
+
 	return proteinres_lipid_interactions
 
 ### Function to sum data for all (or a selection of) lipids:

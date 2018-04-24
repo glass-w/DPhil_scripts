@@ -1,3 +1,6 @@
+
+""" This script calculates the contacts between protein monomers and returns a contact map for each interface."""
+
 import seaborn
 import MDAnalysis as mda
 import numpy as np
@@ -12,6 +15,9 @@ from os.path import join
 from datetime import datetime
 import argparse
 
+__author__ = "William Glass"
+__email__ = "william.glass@chem.ox.ac.uk"
+
 print ' '
 print "### Modules Used ####"
 print ' '
@@ -22,17 +28,35 @@ print ' '
 print "#####################"
 print ' '
 
+# Define constants and libraries
+
+#TODO generalise this for N monomers, mixed proteins & lipid contacts.
 num_protein = 3
+
+lipid_head_group_dict = {'popc' : 'PO4', 'pope' : 'NH3', 'dpsm' : 'NC3', 'dpg3' : 'GM1', 'chol' : 'ROH', 'pops' : 'CN0',
+                         'pop2' : 'P1'}
+lipid_group_dict = {'popc' : 'POPC', 'pope' : 'POPE', 'dpsm' : 'DPSM', 'dpg3' : 'DPG3', 'chol' : 'CHOL', 'pops' : 'POPS',
+                    'pop2' : 'POP2'}
+
+def protein_lipid_interactions(coord, traj):
+
+    u = mda.Universe(coord, traj)
+
+    resid_list = np.asarray(u.select_atoms("protein and not backbone").atoms.residues.resids)  # convert list to array
+    atom_list = np.asarray(u.select_atoms("protein").positions)
+
+    resname_list = np.asarray(u.select_atoms("protein and not backbone").atoms.residues.resnames)
 
 def make_hmap(coord, traj):
 
     u = mda.Universe(coord, traj)
 
-    ''' makes an empty numpy array to be populated
-     universe = a single frame or whole trajectory
-     resid = list of residue ids
-     resnames = list of residue names
-     '''
+    """
+    makes an empty numpy array to be populated. 
+    coord = a GROMACS .gro file
+    traj = a GROMACS .xtc file
+    
+    """
 
     if options.region == 'all':
 
@@ -63,12 +87,12 @@ def make_hmap(coord, traj):
 
 def populate_hmap(empty_heatmap, universe, resid, cut_off):
 
-    '''populates empty heatmap array for a single frame
+    """populates empty heatmap array for a single frame
     heatmap = empty numpy array of N x N
     universe = a single frame or whole trajectory
     resid = list of residue ids
     cut_off = the cut-off value set by the user
-    '''
+    """
 
     heat_map_pop = empty_heatmap    # reset for the next cycle
 
@@ -81,8 +105,6 @@ def populate_hmap(empty_heatmap, universe, resid, cut_off):
         for residue in range(len(resid)):  # For each residue, calculate the c.o.g and store
 
             cog_store[residue] = universe.select_atoms("resid " + str(resid[residue])).center_of_geometry()
-
-        #print cog_store
 
         # Calculate a distance matrix
 
@@ -100,19 +122,16 @@ def populate_hmap(empty_heatmap, universe, resid, cut_off):
 
     heat_map_pop += (d < cut_off).astype(int)
 
-    #print heat_map_pop
-
     return heat_map_pop
 
 def plot_hmap(data, residues,atoms, cut_off):
 
-    print "Making plot..."
-
-    '''plot a single frame
+    """plot a single frame
     data = the populated hmap
     names = list of amino acid names
     resids = list of resids of amino acids
-    '''
+    """
+    print "Making plot..."
 
     data = (data / np.amax(data)) * 100  # normalise to make a percentage
 
@@ -354,8 +373,16 @@ def plot_sub_plots(data, residues,atoms, cut_off, residue_names):
 
                 sub_bar_fig.savefig('sub_bar_figure_' + str(options.plot_type) + str(focus) + str(j) + '.svg', format='svg')
 
-
 def assign_beta_values(universe, residue_ids): #### STILL IN TEST PHASE ####
+
+    """
+
+    Takes the universe supplied and colours the resides based on their contact map vlaue. Two options can be used.
+
+    1) "residue": this colours each residue according to if their COM is within the defined cut off (faster)
+    2) "atom": this colours each atom according to if their COM is within the defined cut off (slower)
+
+    """
 
     print "Writing contacts to PDB file..."
 
@@ -490,7 +517,7 @@ if __name__ == "__main__":
     options = parser.parse_args()
 
     if options.region == 'specific' and options.selection == None:
-        parser.error("-region 'specific' requires -sel flag, make sure you have included the selection!.")
+        parser.error("-region 'specific' requires -sel flag, make sure you have included the selection!")
 
     startTime = datetime.now()
 
