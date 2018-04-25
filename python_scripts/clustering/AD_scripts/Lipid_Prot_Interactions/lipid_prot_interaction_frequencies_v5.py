@@ -7,12 +7,14 @@
     
 Changes to v5 from v4 - re-write structure of count_frequencies algorithm
 '''
+
 import sys
 import re
 import numpy
 import time
 import MDAnalysis
-from MDAnalysis.core.parallel.distances import distance_array
+#from MDAnalysis.core.parallel.distances import distance_array
+from MDAnalysis.lib.distances import distance_array
 import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.cm as cmx
@@ -20,6 +22,10 @@ import matplotlib.colors as colors
 
 import ast
 import argparse
+
+print "MDA Version = " + str(MDAnalysis.__version__)
+print "NumPy Version = " + str(numpy.__version__)
+print "MatPlotLib Version = " +str(matplotlib.__version__)
 
 from interaction_freq_core import protein_info, get_real_resnums_strlist, bondini_residuesymbol_size, martini_residuesymbol_size
 
@@ -106,10 +112,10 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 	
 	lipid_rep_selection = 'resname {} and name {}'.format(lipid, lipid_particles[lipid_part][lipid][0]) # ie. just choose one bead
 
-	lipids = universe.selectAtoms(lipid_selection)
+	lipids = universe.select_atoms(lipid_selection)
 	n_lipid_beads = len(lipid_particles[lipid_part][lipid])
 	n_lipids = lipids.numberOfAtoms() / n_lipid_beads
-	lipid_reps = universe.selectAtoms(lipid_rep_selection)
+	lipid_reps = universe.select_atoms(lipid_rep_selection)
 
     #initialise protein-lipid interactions frequency list
 	proteinres_lipid_interactions = numpy.array([0 for i in protein_residue_list])
@@ -117,7 +123,7 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 	startTime = time.time()    
 	print 'Here we go...'
 	frame = 0
-	print len(universe.trajectory)
+
 	for ts in universe.trajectory[::stride]:
 
 		for i in range(nrepeats):
@@ -178,19 +184,23 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 		print 'Frame {} took {:3f} s'.format(frame, time.time()-startTime)
 		startTime = time.time()
 		break
+
 	proteinres_lipid_interactions_dict = dict( zip(protein_residue_list, proteinres_lipid_interactions) )
-	print proteinres_lipid_interactions_dict
+
 	return proteinres_lipid_interactions_dict
 
 ### functions to produce figures from data ###
 def plot_frequencies(protein_residue_list, proteinres_lipid_interactions):
+
     plt.bar(protein_residue_list, [proteinres_lipid_interactions[res] for res in protein_residue_list])
+
     plt.show()
 
 
 #Kir2.2_3spi
 
-def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Nav1.5_alpha', cutoff=True, cutoff_value=0.025):
+def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Nav1.5_alpha', cutoff=True,cutoff_value=0.005):# cutoff_value=0.025):
+
 	protein_residue_array = numpy.array(protein_residue_list)
 	actual_res_numbers =  protein_residue_array + 40
 	actual_res_namenums = numpy.core.defchararray.add(numpy.array(list(protein_info[prot]['protein_seq'])), get_real_resnums_strlist(prot))
@@ -198,11 +208,15 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 	def percent_interactions(proteinres_lipid_interactions):
 
 		total_interactions = sum(proteinres_lipid_interactions.values())
+
 		interactions_list = []
 
 		for res in protein_residue_list:
+
 			interactions_list.append(float(proteinres_lipid_interactions[res]))
+
 		interactions_array = numpy.array(interactions_list)
+
 		percent_interactions = interactions_array*100/total_interactions
 
 		return percent_interactions
@@ -210,27 +224,42 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 	percent_interactions_dict = {}
 	lipid_list = sorted(proteinres_lipid_interactions_dict.keys())
 
+
 	for lipid in lipid_list:
 		percent_interactions_dict[lipid] = percent_interactions(proteinres_lipid_interactions_dict[lipid])
+
+
 
 	if cutoff:
 		# graph will include ANY residue that has more than <<cutoff>> interactions for ANY lipid
 		over_cutoff = numpy.zeros(shape=len(protein_residue_list), dtype=bool)
+
 		for lipid in lipid_list:
 			over_cutoff += percent_interactions_dict[lipid] >= cutoff_value*100
+
 		for lipid in lipid_list:
+
+			#print percent_interactions_dict[lipid][over_cutoff]
+
 			percent_interactions_dict[lipid] = percent_interactions_dict[lipid][over_cutoff]
+
+		#print percent_interactions_dict
+
 		actual_res_namenums = actual_res_namenums[over_cutoff]
 
 	fig, ax = plt.subplots()
 	#rects=ax.barh(range(len(percent_interactions)), percent_interactions, align='center' , color='yellow')
 	#ax.invert_xaxis()
 	ax.invert_yaxis()
-	width = 0.7/len(lipid_list)
+	width = 0.7 / len(lipid_list)
 	edge_colors = ['orange','blue','darkgrey']
-	i=0
+	i = 0
 	lipid_rects = {}
+
+	print lipid_list
+
 	for lipid in lipid_list:
+
 		if re.match(r'PI.*', lipid):
 			#barcolor = 'yellow'
 			#maxpercent = max(percent_interactions_dict[lipid])
@@ -247,12 +276,14 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 			lipid_cmap=colors.LinearSegmentedColormap.from_list('greymap', ['white','darkgrey'])
 		elif re.match(r'PPCS.*', lipid):
 			lipid_cmap=colors.LinearSegmentedColormap.from_list('greenmap', ['white','green'])
+
 		maxpercent = max(max(percent_interactions_dict[lipid]) for lipid in lipid_list)
 		cNorm = colors.Normalize(vmin=0,vmax=maxpercent)
 		scalar_map = cmx.ScalarMappable(norm = cNorm, cmap = lipid_cmap)
 		barcolor=scalar_map.to_rgba(percent_interactions_dict[lipid])
 		lipid_rects[lipid] = ax.barh(numpy.arange(len(percent_interactions_dict[lipid]))+width*i, percent_interactions_dict[lipid], width, align='center' , color=barcolor, ec=edge_colors[i])
-		i+=1
+		i += 1
+
 	#if len(proteinres_lipid_interactions_dict.keys()) > 1:
 	#	ax.legend( lipid_rects.values(), lipid_rects.keys() )
 	ax.set_ylabel('Residue')
@@ -264,24 +295,111 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 	plt.savefig('prot_{}_int_v6.svg'.format(''.join(lipid_list)), orientation='portrait', bbox_inches='tight')
 	#plt.show()
 
-def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, sensitive=False):
+def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, sensitive=True):
 	#normalise interactions - not really necessary - can do this w/ VMD colorscales
 	u = MDAnalysis.Universe(gro_file)
-	protein=u.selectAtoms("protein")
+	protein = u.select_atoms("protein")
 	nres = len(protein.residues)
+	#nres = len(protein.atoms)
 	nresmono = nres/nmonomers
 	total_interactions = sum(interactions.values())
 	protein_residue_list = sorted(interactions.keys())
 	interactions_array = numpy.array([float(interactions[res]) for res in protein_residue_list])
+
+	#print interactions_array
+
 	if sensitive:
-		percent_interactions = interactions_array*10000/total_interactions # to make smaller numbers visible (for when total_interactions is v large)
+		percent_interactions = interactions_array*10000 / total_interactions # to make smaller numbers visible (for when total_interactions is v large)
+
 	else:
-		percent_interactions = interactions_array*100/total_interactions
-	for i in range(nresmono):
-		for j in range(nmonomers):
-			protein.residues[j*nresmono + i].set_bfactor(percent_interactions[i])
-	with MDAnalysis.Writer(outfile, numatoms=u.atoms.numberOfAtoms()) as PDB:
-		PDB.write(u.atoms)
+		percent_interactions = interactions_array*10000000 / total_interactions
+
+	residue_bfactors = numpy.zeros((len(numpy.asarray(u.select_atoms("protein").atoms)), 1))
+
+	u.add_TopologyAttr(MDAnalysis.core.topologyattrs.Tempfactors(numpy.zeros(len(u.atoms))))
+
+	#residue_atoms_storage = numpy.array((len(numpy.asarray(u.select_atoms("protein").atoms)), 1))
+	residue_atoms_storage = []
+
+	for i in range(nresmono): # for each residue in a monomer
+		for j in range(nmonomers): # for the number of monomers i.e. if your protein has multiple subunits
+
+			#print protein.residues[j*nresmono + i].atoms
+
+			residue_atoms = protein.residues[j*nresmono + i].atoms
+
+			#print residue_atoms
+
+			# protein.residues[j*nresmono + i].set_bfactor(percent_interactions[i])
+
+			# protein.residues[j * nresmono + i] = percent_interactions[i]
+
+			#residue_atoms_storage[j*nresmono + i] = residue_atoms[0]
+			for particle in range(len(residue_atoms)):
+
+				#print particle
+
+				residue_atoms_storage.append(residue_atoms[particle])
+
+			#residue_bfactors[j * nresmono + i] = percent_interactions[i]
+
+			# print (protein.residues[j * nresmono + i])
+
+		# print protein.residues[j*nresmono + i]
+		# print percent_interactions[i]
+
+	#print len(numpy.asarray(residue_atoms_storage))
+
+	### need to loop through the particle storage and assign the beta value to each atom of each residue,
+	# due to the way this is set up you will have to insert new rows to a new array.
+
+	martini_residuesymbol_size_three = {'ALA': 1, 'CYS': 2, 'ASP': 2, 'GLU': 2, 'PHE': 4, 'GLY': 1, 'HIS': 4, 'ILE': 2, 'LYS': 3, 'LEU': 2,
+								  'MET': 2, 'ASN': 2, 'PRO': 2, 'GLN': 2, 'ARG': 3, 'SER': 2, 'THR': 2, 'VAL': 2, 'TRP': 5, 'TYR': 4}
+
+	j = 0
+	i = 0
+
+	print len(percent_interactions)
+	print len(residue_bfactors)
+	print len(residue_atoms_storage)
+
+
+	for row in percent_interactions:
+
+		current_resname = residue_atoms_storage[i].resname
+		print current_resname
+
+		print j, j + martini_residuesymbol_size_three[current_resname] -1
+
+
+		residue_bfactors[j : (j + martini_residuesymbol_size_three[current_resname] -1)] = percent_interactions[i]
+
+		j += 1
+
+		i += 1
+
+		if i == 100:
+			break
+
+
+		#print current_resname
+		#print residue_bfactors[i]
+
+	#print residue_bfactors > 0
+
+	#protein.residues.atoms.tempfactors = residue_atoms_storage
+	protein.residues.atoms.tempfactors = residue_bfactors
+
+
+
+
+	u.select_atoms("protein").write("residue_bfact.pdb", format("PDB"))
+
+	#with MDAnalysis.Writer(filename=outfile, n_atoms=u.atoms.n_atoms()) as PDB:
+
+	#with MDAnalysis.Writer(filename=outfile) as PDB:
+
+		#PDB.write(u.atoms)
 
 # functions for reading input - residue list and interactions file
 def make_res_list(res_string, protname):
@@ -302,12 +420,11 @@ def make_interactions_dict(dictionary_filename):
 	# for line in f.readlines():
 	# 	print line
 
-	line = f.readlines()[2]
+	# line = f.readlines()[2]
+	dictionary_string = f.readlines()[2].rstrip()
+	proteinres_lipid_interactions = ast.literal_eval(dictionary_string)
 
-	print line.rstrip()
-	#dictionary_string = f.readlines()[2].rstrip()
-	#proteinres_lipid_interactions = ast.literal_eval(dictionary_string)
-	proteinres_lipid_interactions = ast.literal_eval(line.rstrip())
+	#print proteinres_lipid_interactions
 
 	return proteinres_lipid_interactions
 
