@@ -356,34 +356,26 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 	martini_residuesymbol_size_three = {'ALA': 1, 'CYS': 2, 'ASP': 2, 'GLU': 2, 'PHE': 4, 'GLY': 1, 'HIS': 4, 'ILE': 2, 'LYS': 3, 'LEU': 2,
 								  'MET': 2, 'ASN': 2, 'PRO': 2, 'GLN': 2, 'ARG': 3, 'SER': 2, 'THR': 2, 'VAL': 2, 'TRP': 5, 'TYR': 4}
 
-	j = 0
 	i = 0
 
-	print len(percent_interactions)
-	print len(residue_bfactors)
-	print len(residue_atoms_storage)
+	# Due to the way MDA 0.17.0 sets bfactors need to get number of particles per residue.
+	# Done by referencing a dictionary when going through the residue_atoms_storage array:
+	# 	- Set the rows to: current row up to No. particles in the current residue (-1 due to indexing).
+	#	- Set all of these rows (particles in a residue) to the value obtained in the interaction dict.
 
-
-	for row in percent_interactions:
+	for residue in percent_interactions:
 
 		current_resname = residue_atoms_storage[i].resname
+
 		print current_resname
 
-		print j, j + martini_residuesymbol_size_three[current_resname] -1
+		print i, i + martini_residuesymbol_size_three[current_resname] -1
 
+		# print residue_bfactors[:, j : (j + martini_residuesymbol_size_three[current_resname] - 1)]
 
-		residue_bfactors[j : (j + martini_residuesymbol_size_three[current_resname] -1)] = percent_interactions[i]
-
-		j += 1
+		residue_bfactors[i : (i + martini_residuesymbol_size_three[current_resname] -1)] = percent_interactions[i]
 
 		i += 1
-
-		if i == 100:
-			break
-
-
-		#print current_resname
-		#print residue_bfactors[i]
 
 	#print residue_bfactors > 0
 
