@@ -58,20 +58,25 @@ def make_split_list_single_prot(prot_seq, ff_ressize_dict=martini_residuesymbol_
 
         splitlist_single.append(counter)
 
-    return splitlist_single[:-1]  
+	#print splitlist_single[-1]
+
+    return splitlist_single[-1]
+
+	#return splitlist_single[:]
 
 def get_protresname_array():
 
 	pass # could add this function later, to make barplots functions a bit more generic/smoother
 
 lipid_particles = {
-	'headgroup' : {'PIP2': ['PO3','PO1','PO2','RP1','RP2','RP3'],
+	'headgroup' : {'POP2': ['PO4','P1','P2','C1','C2','C3'], #{'PIP2': ['PO3','PO1','PO2','RP1','RP2','RP3'],
 			'PI3': ['PO3','PO0','PO1','PO2','RP1','RP2','RP3'],
 			'PSPI' : ['PO3','RP1','RP2','RP3'],
-			'CHOL' : ['ROH', 'R1', 'R2', 'R3', 'R4', 'R5'], #'C1', 'C2'], # this is actually the whole CHOL},
-			'GM3': ['INA','B1A','B2A','B3A','B1B','B2B','B3B','INB','B1C','B2C','B3C','INC','B4C','B5C'],
+			'CHOL' : ['ROH', 'R1', 'R2', 'R3', 'R4', 'R5', 'C1', 'C2'], # this is actually the whole CHOL},
+			#'GM3': ['INA','B1A','B2A','B3A','B1B','B2B','B3B','INB','B1C','B2C','B3C','INC','B4C','B5C'],
+			'DPG3': ['GM1','GM2','GM3','GM4','GM5','GM6','GM13','GM14','GM15','GM16','GM17'],
 			'PPCS' : ['PO4','NC3'],
-			'POPS' : ['PO4','CNO'],
+			'POPS' : ['PO4','CN0'], #changed from CNO
 			'POPC' : ['PO4','NC3'],
 			'POPE' : ['PO4','NH3']},
 	'phosphate' : {'PIP2': ['PO3','PO1','PO2'],
@@ -83,7 +88,7 @@ lipid_particles = {
 			'POPS' : ['PO4'],
 			'POPC' : ['PO4'],
 			'POPE' : ['PO4']},
-	'phosphate_singlebead' : {'PIP2': ['PO3'],
+	'phosphate_singlebead' :{'POP2': ['CP'],# {'PIP2': ['PO3'],
 			'PI3': ['PO3'],
 			'PSPI' : ['PO3'],
 			'CHOL' : ['ROH'],
@@ -94,7 +99,7 @@ lipid_particles = {
 			'POPE' : ['PO4']}}
 
 ### main function to count interactions and produce interactions file ###
-def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepeats, lipid, stride=1000, lipid_part='headgroup', protein_centre='centroid', protein_centre_cutoff= 60, cutoff=6.5):
+def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepeats, lipid, stride=1000, lipid_part='headgroup', protein_centre='centroid', protein_centre_cutoff=60, cutoff=6.5):# protein_centre_cutoff= 60, cutoff=6.5):
 
 	print "here!"
 	universe = MDAnalysis.Universe(gro_file, trr_file)
@@ -109,12 +114,16 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 	for bead in lipid_particles[lipid_part][lipid]:
 		lipid_selection += 'name {} or '.format(bead)
 	lipid_selection = lipid_selection[:-4] + ')'
+
+	print lipid_selection
 	
 	lipid_rep_selection = 'resname {} and name {}'.format(lipid, lipid_particles[lipid_part][lipid][0]) # ie. just choose one bead
 
+	print lipid_rep_selection
+
 	lipids = universe.select_atoms(lipid_selection)
 	n_lipid_beads = len(lipid_particles[lipid_part][lipid])
-	n_lipids = lipids.numberOfAtoms() / n_lipid_beads
+	n_lipids = lipids.atoms.n_atoms / n_lipid_beads
 	lipid_reps = universe.select_atoms(lipid_rep_selection)
 
     #initialise protein-lipid interactions frequency list
@@ -128,7 +137,11 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 
 		for i in range(nrepeats):
 
-			single_prot = universe.segments[0][range(i*protein_res_total, (i+1)*protein_res_total)]
+			#single_prot = universe.segments[0][range(i*protein_res_total, (i+1)*protein_res_total)]
+
+			# MDAnalysis 0.17.0 update below
+			single_prot = universe.segments.atoms[range(i * protein_res_total, (i + 1) * protein_res_total)]
+
 			# find protein centroid - or pick out residue to represent protein position
 			if protein_centre == 'centroid':
 				single_prot_cent = numpy.array([single_prot.centroid()])
@@ -141,33 +154,70 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 				print 'Error: protein_centre should either be an integer residue number, or "centroid"'
 				return None
 			# find lipids within 60 A of prot centroid and pick those out from lipids selection
-			close = distance_array(single_prot_cent, lipid_reps.coordinates(), ts.dimensions) < protein_centre_cutoff
+
+			#close = distance_array(single_prot_cent, lipid_reps.coordinates(), ts.dimensions) < protein_centre_cutoff
+
+			# MDAnalysis 0.17.0 update below
+			close = distance_array(single_prot_cent, lipid_reps.positions, ts.dimensions) < protein_centre_cutoff
+
+			#print close
+
 			lipids_close_indices = []
 
 			for index in numpy.nonzero(close)[1]: 											# numpy.nonzero gives a tuple of arrays - the second gives the indices of lipid residues that are 'close' to the protein
 				lipids_close_indices += range(index*n_lipid_beads, (index+1)*n_lipid_beads) # convert residue IDs to atoms IDs for 'close' lipids
 
+
 			lipids_close = lipids[lipids_close_indices]
+
+
 			n_lipids_close = sum(close.flatten())
+
+
 			# now look at prot-lipid interaction on per residue level
 
 			if n_lipids_close == 0:
 				continue # ie. nothing is added to proteinres_lipid_interactions
 
 			else:
-				all_dists = distance_array(single_prot.coordinates(), lipids_close.coordinates(), ts.dimensions)
+				#all_dists = distance_array(single_prot.coordinates(), lipids_close.coordinates(), ts.dimensions)
+
+				# MDAnalysis 0.17.0 update below
+
+				all_dists = distance_array(single_prot.positions, lipids_close.positions, ts.dimensions)
 
 				# print n_lipids
 				# print n_lipids_close
-
-				protein_lipid_dist_perresidue_all = numpy.array([[x.min() for x in numpy.split(lip, prot_split, axis=0)] for lip in numpy.split(all_dists, n_lipids_close, axis=1)])
-
-				# Below = checking what the above is doing...
-				# for lip in numpy.split(all_dists, n_lipids_close, axis=1):
                 #
-				# 	for i, x in enumerate(numpy.split(lip, prot_split, axis=0)):
-                #
-				# 		print i, len(lip), x.min()
+				# print numpy.shape(all_dists)
+				# print numpy.shape(n_lipids_close)
+
+				#protein_lipid_dist_perresidue_all = numpy.array([[x.min() for x in numpy.split(lip, prot_split, axis=0)] for lip in numpy.split(all_dists, n_lipids_close, axis=1)])
+				protein_lipid_dist_perresidue_all = numpy.array(
+					[[x.min() for x in numpy.split(lip, len(universe.select_atoms("name BB"))/args.nrepeats, axis=0)] for lip in
+					 numpy.split(all_dists, n_lipids_close, axis=1)])
+				#Below = checking what the above is doing...
+
+				#print prot_split
+				# for i, lip in enumerate(numpy.split(all_dists, n_lipids_close, axis=1)):
+				# 	pass
+				# 	print i, numpy.shape(lip)
+
+					# for i, x in enumerate(numpy.split(lip, prot_split, axis=0)):
+					# 	pass
+
+						# print len(prot_split)
+						# print len(lip)
+                        #
+						# if i == 579:
+						# 	print "LIP = ", lip
+						# 	print "X = ", x
+
+						# if i == 580:
+						# 	print "LIP = ", lip
+						# 	print "X = ", x
+
+						#print i, len(lip), x.min()
 
 
 
@@ -175,15 +225,17 @@ def count_frequencies(gro_file, trr_file, prot_seq, protein_residue_list, nrepea
 				#print protein_lipid_dist_perresidue_all[:,17]
 				interactions = protein_lipid_dist_perresidue_all <= cutoff
 				proteinres_lipid_interactions += numpy.sum(interactions, axis = 0) # sum over all lipids for each res
+
 			#update = '\rProtein {}/{} took {:3f} s'.format(i, nrepeats, time.time()-startTime)
 			#print update,
 			#sys.stdout.flush()
 			#sys.stdout.write(update)
 			#startTime = time.time()
+
 		frame += 1
 		print 'Frame {} took {:3f} s'.format(frame, time.time()-startTime)
 		startTime = time.time()
-		break
+		# break
 
 	proteinres_lipid_interactions_dict = dict( zip(protein_residue_list, proteinres_lipid_interactions) )
 
@@ -199,7 +251,7 @@ def plot_frequencies(protein_residue_list, proteinres_lipid_interactions):
 
 #Kir2.2_3spi
 
-def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Nav1.5_alpha', cutoff=True,cutoff_value=0.005):# cutoff_value=0.025):
+def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_dict, prot='Nav1.5_alpha', cutoff=True, cutoff_value=0.005):# cutoff_value=0.025):
 
 	protein_residue_array = numpy.array(protein_residue_list)
 	actual_res_numbers =  protein_residue_array + 40
@@ -300,19 +352,24 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 	u = MDAnalysis.Universe(gro_file)
 	protein = u.select_atoms("protein")
 	nres = len(protein.residues)
+
 	#nres = len(protein.atoms)
 	nresmono = nres/nmonomers
+
 	total_interactions = sum(interactions.values())
+
 	protein_residue_list = sorted(interactions.keys())
+
 	interactions_array = numpy.array([float(interactions[res]) for res in protein_residue_list])
 
-	#print interactions_array
+	# print interactions_array
+	# print len(interactions_array)
 
 	if sensitive:
 		percent_interactions = interactions_array*10000 / total_interactions # to make smaller numbers visible (for when total_interactions is v large)
 
 	else:
-		percent_interactions = interactions_array*10000000 / total_interactions
+		percent_interactions = interactions_array*100 / total_interactions
 
 	residue_bfactors = numpy.zeros((len(numpy.asarray(u.select_atoms("protein").atoms)), 1))
 
@@ -320,13 +377,25 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 
 	#residue_atoms_storage = numpy.array((len(numpy.asarray(u.select_atoms("protein").atoms)), 1))
 	residue_atoms_storage = []
+	residue_resname_storage =[]
 
-	for i in range(nresmono): # for each residue in a monomer
-		for j in range(nmonomers): # for the number of monomers i.e. if your protein has multiple subunits
+	residue_info = []
+
+	for i in range(nresmono): # for each residue in a monomer (1315)
+
+		for j in range(nmonomers): # for the number of monomers i.e. if your protein has multiple subunits (1)
 
 			#print protein.residues[j*nresmono + i].atoms
 
 			residue_atoms = protein.residues[j*nresmono + i].atoms
+
+			residue_resname_storage.append(protein.residues[j*nresmono + i].resname)
+
+			residue_info.append(protein.residues[j*nresmono + i])
+
+			#print protein.residues[j*nresmono + i].resname
+
+			#print residue_atoms.resnames, residue_atoms.names
 
 			#print residue_atoms
 
@@ -335,6 +404,7 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 			# protein.residues[j * nresmono + i] = percent_interactions[i]
 
 			#residue_atoms_storage[j*nresmono + i] = residue_atoms[0]
+
 			for particle in range(len(residue_atoms)):
 
 				#print particle
@@ -353,29 +423,85 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 	### need to loop through the particle storage and assign the beta value to each atom of each residue,
 	# due to the way this is set up you will have to insert new rows to a new array.
 
-	martini_residuesymbol_size_three = {'ALA': 1, 'CYS': 2, 'ASP': 2, 'GLU': 2, 'PHE': 4, 'GLY': 1, 'HIS': 4, 'ILE': 2, 'LYS': 3, 'LEU': 2,
-								  'MET': 2, 'ASN': 2, 'PRO': 2, 'GLN': 2, 'ARG': 3, 'SER': 2, 'THR': 2, 'VAL': 2, 'TRP': 5, 'TYR': 4}
+	martini_residuesymbol_size = {'A': 1, 'C': 2, 'D': 2, 'E': 2, 'F': 4, 'G': 1, 'H': 4, 'I': 2, 'K': 3, 'L': 2,
+								  'M': 2, 'N': 2, 'P': 2, 'Q': 2, 'R': 3, 'S': 2, 'T': 2, 'V': 2, 'W': 5, 'Y': 4}
 
-	i = 0
+	martini_residuesymbol_size_three = {'ALA': 1, 'CYS': 2, 'ASP': 2, 'GLU': 2, 'PHE': 4, 'GLY': 1, 'HIS': 4, 'ILE': 2,
+										'LYS': 3, 'LEU': 2, 'MET': 2, 'ASN': 2, 'PRO': 2, 'GLN': 2, 'ARG': 3, 'SER': 2,
+										'THR': 2, 'VAL': 2, 'TRP': 5, 'TYR': 4}
+
+
 
 	# Due to the way MDA 0.17.0 sets bfactors need to get number of particles per residue.
 	# Done by referencing a dictionary when going through the residue_atoms_storage array:
 	# 	- Set the rows to: current row up to No. particles in the current residue (-1 due to indexing).
 	#	- Set all of these rows (particles in a residue) to the value obtained in the interaction dict.
 
+	#print len(residue_bfactors)
+	#print len(percent_interactions)
+
+	start = 0
+	i = 0
+
+	# print len(residue_bfactors)
+	# print ""
+
+	#print residue_atoms_storage
+
 	for residue in percent_interactions:
 
-		current_resname = residue_atoms_storage[i].resname
+		#current_resname = residue_atoms_storage[i].resname
 
-		print current_resname
+		#current_resname = residue_resname_storage[i]
 
-		print i, i + martini_residuesymbol_size_three[current_resname] -1
+		current_resname = residue_info[i].resname
+
+		#current_resnumber = residue_atoms_storage[i].resid
+
+		current_resnumber = residue_info[i].resid
+
+		#current_name = residue_atoms_storage[i].name
+
+		current_name = residue_info[i].resname
+
+		#print current_resname
+		#print martini_residuesymbol_size_three[current_resname]
+		# print residue_atoms_storage[i].resid
 
 		# print residue_bfactors[:, j : (j + martini_residuesymbol_size_three[current_resname] - 1)]
 
-		residue_bfactors[i : (i + martini_residuesymbol_size_three[current_resname] -1)] = percent_interactions[i]
+		# residue_bfactors[i : (i + martini_residuesymbol_size_three[current_resname])] = percent_interactions[i]
+
+		num_particles_in_res = martini_residuesymbol_size_three[current_resname]
+
+		stop = start + num_particles_in_res
+
+		residue_bfactors[start : stop] = percent_interactions[i]
+
+		# print residue_bfactors
+        # #
+		# print "current residue beads = ", martini_residuesymbol_size_three[current_resname]
+		# print "No. = ", current_resnumber, ", Resname = ", current_resname, ", Particle = ", current_name
+		# #print residue_bfactors[start : stop]
+		# print "start: ", start
+		# print "stop: ", stop
+
+		# print "i = ", i
+		# print "i ub = ", i + martini_residuesymbol_size_three[current_resname]
+
+		#print start
+		#print stop
+
+		#print residue_bfactors[i : (i + martini_residuesymbol_size_three[current_resname])]
+		# print ""
+		# print percent_interactions[i]
+
+		start = stop
 
 		i += 1
+        #
+		# if i == 10:
+		# 	break
 
 	#print residue_bfactors > 0
 
@@ -385,7 +511,7 @@ def show_frequencies_on_structure(nmonomers, interactions, gro_file, outfile, se
 
 
 
-	u.select_atoms("protein").write("residue_bfact.pdb", format("PDB"))
+	u.select_atoms("protein").write(outfile + ".pdb", format("PDB"))
 
 	#with MDAnalysis.Writer(filename=outfile, n_atoms=u.atoms.n_atoms()) as PDB:
 
