@@ -18,9 +18,9 @@ echo 'system' | trjconv_avx -f $(basename $XTC '.xtc')skip$SKIP.xtc -pbc whole -
 
 echo 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_skip$SKIP.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump_skip$SKIP.xtc -pbc nojump -s $TPR
 
-echo 'nav' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_skip$SKIP.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump_Center_skip$SKIP.xtc -pbc atom -center -ur compact -s $TPR -n index.ndx
+echo 'protein' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_skip$SKIP.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump_Center_skip$SKIP.xtc -pbc atom -center -ur compact -s $TPR -n index.ndx
 
-echo 'nav' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_Center_skip$SKIP.xtc -o $(basename $XTC '.xtc')_noPBCComplete_skip$SKIP.xtc -fit progressive -s $TPR -n index.ndx
+echo 'protein' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_Center_skip$SKIP.xtc -o $(basename $XTC '.xtc')_noPBCComplete_skip$SKIP.xtc -fit progressive -s $TPR -n index.ndx
 
 #rm Prod_output_noPBCWhole.xtc Prod_output_noPBCWhole_noJump.xtc Prod_output_noPBCWhole_noJump_Center.xtc
 
@@ -28,12 +28,12 @@ echo 'nav' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_C
 
 else
 
-echo 'system' | trjconv_avx -f $(basename $XTC '.xtc').xtc -pbc whole -s $TPR -o $(basename $XTC '.xtc')_noPBCWhole.xtc
+echo 'system' | trjconv_avx -f $XTC -pbc whole -s $TPR -o $(basename $XTC '.xtc')_noPBCWhole.xtc
 
 echo 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump.xtc -pbc nojump -s $TPR 
 
-echo 'nav' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump_Center.xtc -pbc atom -center -ur compact -s $TPR 
+echo 'protein' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump.xtc -o $(basename $XTC '.xtc')_noPBCWhole_noJump_Center.xtc -pbc atom -center -ur compact -s $TPR 
 
-echo 'nav' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_Center.xtc -o $(basename $XTC '.xtc')_noPBCComplete.xtc -fit progressive -s $TPR
+echo 'protein' 'system' | trjconv_avx -f $(basename $XTC '.xtc')_noPBCWhole_noJump_Center.xtc -o $(basename $XTC '.xtc')_noPBCComplete.xtc -fit progressive -s $TPR
 
 fi
