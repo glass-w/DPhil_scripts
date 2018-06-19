@@ -7,7 +7,7 @@
 
  '''
 
-box_increase=6
+box_increase=9
 
 #count atoms
 
@@ -28,8 +28,9 @@ z=$(echo $old_z + $box_increase | bc)
 
 #apply new dimensions to protein and lipid files individually
 
-echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 -15 0 -box $x $y $z
-#gmx_sse editconf -f newbox.gro -translate 0 0 5 -o trimer_tm_newbox.gro
+#echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 -15 0 -box $x $y $z
+echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 0 0 -box $x $y $z
+gmx_sse editconf -f newbox.gro -translate 0 0 6 -o translated_newbox.gro
 
 gmx_sse editconf -f $2 -o $2 -c -box $x $y $z
 
@@ -38,11 +39,11 @@ echo 'protein' | gmx_sse genrestr -f newbox.gro -o strong_posre.itp -fc 100000 1
 
 #delete box dimensions, title and number of atoms in protein file
 
-sed -i '1,2d;$d' newbox.gro #remove box dimensions from protein file
+sed -i '1,2d;$d' translated_newbox.gro #remove box dimensions from protein file
 sed -i '1,2d' $2  		#remove title and num atoms from lipid file
 sed -e "\$a$x $y $z" $2       #add new dimensions to end of lipid file
 
-cat newbox.gro $2 > combined.gro
+cat translated_newbox.gro $2 > combined.gro
 
 #add title and number of atoms to top of .gro file
 

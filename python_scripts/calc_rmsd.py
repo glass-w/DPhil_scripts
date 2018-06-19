@@ -61,7 +61,8 @@ def plot(data, plot_name):
     '''A function to plot calculated RMSD data and save the image according to the .gro file input'''
 
     ax = plt.subplot(111)
-    ax.set_title(r"RMSD of $\beta$3 Trimer")# - (system: " + plot_name + ")")
+    #ax.set_title(r"RMSD of $\beta$3 Trimer")# - (system: " + plot_name + ")")
+    ax.set_title(r"RMSD of Nav1.7 $\alpha$ Subunit Model")
     ax.plot((data[:, 0]/1000), (data[:, 1]), 'blue', lw=1.5, label=r"$R_G$", alpha=0.9)
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel("RMSD ($\AA$)")
@@ -73,8 +74,8 @@ def plot_multiple(plot_average):
     files = glob("*.csv")
 
     ax = plt.subplot(111)
-    ax.set_title(r"RMSD of $\beta$3 Trimer")
-
+    #ax.set_title(r"RMSD of $\beta$3 Trimer")
+    #ax.set_title(r"RMSD of Nav1.7 $\alpha$ Subunit Model")
     # Temporary fix!
     #mean = np.mean(np.array([split_all[0], split_all[1]]), axis=0)
 

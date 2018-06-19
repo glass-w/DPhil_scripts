@@ -15,7 +15,7 @@ for d in ./*/ ; do
 	((i++))
 
 	
-	mkdir input output         
+#	mkdir input output         
          
         cd $ORIG
 

@@ -1,4 +1,22 @@
 #!/usr/bin/env bash
+
+################################################################################################################################
+#															       # 
+# Author: W. Glass 2018													       #
+# Description: 														       #
+#															       #
+#	This script takes a .gro file without any water (this can be with or without a membrane) and generates                 # 
+#	a solvated system with ions along with a .tpr file (assumed to be for energy minimisation).                            #
+#															       #
+#	1) gather info for input files.											       #
+#	2) solvate the system and check if there is a membrane present, if not then skip the water removal python script.      #
+#	3) if there is a membrane, start the python script (py2.7).							       #
+#	4) add the new number of water molecules to the supplied .top file.						       #
+#	5) add ions and create a .tpr file ready for minimisation, this is assuming the .mdp file in the current directory is  #
+#	an energy minimisation script.											       #
+#															       #
+################################################################################################################################
+
 MDPFILE=`ls *.mdp`
 TOPFILE=`ls *.top`
 GROFILE=`ls *.gro`
@@ -7,13 +25,14 @@ XTCFILE=`ls *.xtc`
 NDXFILE=`ls *.ndx`
 CPTFILE=`ls *.cpt`
 
+# Path to python water removal script
+PY_WATER_REM_PATH=~/SCRIPTS/python_scripts
+
 # solvate system with water
 
 gmx_sse solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro # -p $TOPFILE
 
-#mv vdwradii.dat vdwradii.dat.used
-
-# check if we have a membrane in our system, if so then remove waters inside membrane.
+# check if we have a membrane in our system (assuming AT POPC membrane), if so then remove waters inside membrane.
 in_mrbane_check=`grep "POPC" $GROFILE | wc -l`
 
 if [ $in_mrbane_check != 0 ]
@@ -23,7 +42,7 @@ echo ""
 echo "*** starting python script ***"
 echo ""
 echo "*** removing waters in bilayer... ***"
-python ~/SCRIPTS/python_scripts/rem_water_at.py "$GROFILE_BN"_solvated.gro
+python "$PY_WATER_REM_PATH"/rem_water_at.py "$GROFILE_BN"_solvated.gro
 echo ""
 echo "*** waters in bilayer removed! ***"
 echo ""
@@ -51,6 +70,4 @@ gmx_sse grompp -f $MDPFILE -c "$GROFILE_BN"_solvated.gro -p $TOPFILE_SOLV -o min
 mv $TOPFILE_SOLV "$GROFILE_BN"_solvated.top
 rm $TOPFILE
 
-
-
-# here you make a tpr file that is ready to be exectuted.
+# You now have a .tpr file that is ready to be exectuted for energy minimisation.

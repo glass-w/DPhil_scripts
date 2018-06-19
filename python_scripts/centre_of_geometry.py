@@ -12,10 +12,10 @@ def area(a, b, c):
 
 
 def cog(gro_file, traj_file):
-    print gro_file
-    print traj_file
+    print gro_file[0]
+    print traj_file[0]
 
-    u = mda.Universe(gro_file, traj_file)
+    u = mda.Universe(gro_file[0], traj_file[0])
 
     # define regions of which you want to calculate the centre of geometry
     # ig_a = u.select_atoms("resid 1:123")
@@ -29,6 +29,12 @@ def cog(gro_file, traj_file):
     ig_a = u.select_atoms("resid 13:123")
     ig_b = u.select_atoms("resid 136:246")
     ig_c = u.select_atoms("resid 259:369")
+    #ig_c = u.select_atoms("resid 259:368")     # for the system where the terminal VAL is missing
+
+    # print ig_a.resnames
+    # print ig_b.resnames
+    # print ig_c.resnames
+
 
     r1_store, r2_store, r3_store = [], [], []
 
@@ -107,12 +113,15 @@ def cog(gro_file, traj_file):
     ax.plot(xnew, power_smooth3, c2[2], label='Chain C', alpha=0.9)
     ax.plot(time, d3_store, c2[2], alpha=0.2)
 
+    ax.set_ylim([13, 21])  # to compare different plots
+
+
     if options.plot_avg_line_flag == True:
 
         ax.plot(xnew, np.mean([power_smooth1, power_smooth2, power_smooth3], axis=0), c='black', label='Average', alpha=1)
 
     ax.legend()
-    plt.title("Distance of " + r'$\beta$3' + "Trimer EC Domains & Trimer Centre (C4-C26 Broken)")
+    plt.title("Distance of " + r'$\beta$3' + "Trimer EC Domains & Trimer Centre")# (C4-C26 Broken)")
     plt.savefig(str(options.file_name) + '_distance_from_cent.svg', dpi=300)
     plt.clf()
 
@@ -141,7 +150,7 @@ def cog(gro_file, traj_file):
         ax.plot(xnew, np.mean([power_smooth1, power_smooth2, power_smooth3], axis=0), c='black', label='Average', alpha=1)
 
     ax.legend()
-    plt.title("Distance Between EC Domains of " + r'$\beta$3' + " (water box, C4-C26 Broken)")
+    plt.title("Distance Between EC Domains of " + r'$\beta$3' + " (water box)")#, C4-C26 Broken)")
     plt.savefig(str(options.file_name) + '_distance.svg', dpi=300)
     plt.clf()
 
@@ -152,7 +161,7 @@ def cog(gro_file, traj_file):
     ax = plt.subplot(111)
     ax.set_xlabel("Time (ns)")
     ax.set_ylabel("Area ($\AA ^2$)")
-    plt.title("Area Between EC Domains of " + r'$\beta$3' + " (water box, C4-C26 Broken)")
+    plt.title("Area Between EC Domains of " + r'$\beta$3' + " (water box)")#, C4-C26 Broken)")
 
     ax.plot(xnew, spline(time, area_store, xnew))
 
@@ -245,6 +254,9 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
         u = mda.Universe(gro_list[0], traj_list[0])
         protein_length = len(u.select_atoms("protein and name CA"))
+
+        for frame in u.trajectory:
+            print u.trajectory[frame].time
 
         print "One universe loaded..."
 
