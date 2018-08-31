@@ -335,7 +335,7 @@ def abs_angle_2D_between(v1, v2):
 
 def calculate_cog(tmp_coords, box_dim):
 
-	#this method allows to take pbc into account when calculcating the center of geometry
+	#this method allows to take pbc into account when calculating the center of geometry
 	#see: http://en.wikipedia.org/wiki/Center_of_mass#Systems_with_periodic_boundary_conditions
 
 	cog_coord = np.zeros(3)
@@ -788,6 +788,7 @@ def plot_angle_avg_std(avg_array, std_array, frame_array, ax):
 #                  Parser
 # ----------------------------------------
 
+# TODO only need --sel for when analysing lipid dnesity, if only looking at protein - protein this shouldn't be needed.
 
 if __name__ == '__main__':
 	import argparse

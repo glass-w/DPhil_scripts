@@ -28,7 +28,7 @@ CPTFILE=`ls *.cpt`
 # Path to python water removal script
 PY_WATER_REM_PATH=~/SCRIPTS/python_scripts
 
-# solvate system with water
+# solvate system with water, don't read in topology file. Will add new waters after water removal script.
 
 gmx_sse solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro # -p $TOPFILE
 
@@ -42,7 +42,7 @@ echo ""
 echo "*** starting python script ***"
 echo ""
 echo "*** removing waters in bilayer... ***"
-python "$PY_WATER_REM_PATH"/rem_water_at.py "$GROFILE_BN"_solvated.gro
+python "$PY_WATER_REM_PATH"/rem_water_at_py36.py "$GROFILE_BN"_solvated.gro
 echo ""
 echo "*** waters in bilayer removed! ***"
 echo ""
@@ -60,14 +60,17 @@ TOPFILE_SOLV="topol_solvated.top"
 
 # add ions 
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -o minimisation_solvated_system.tpr
-echo 'SOL' | gmx_sse genion -s minimisation_solvated_system.tpr -p $TOPFILE_SOLV -conc 0.15 -nname CL -pname NA -neutral -o "$GROFILE_BN"_solvated.gro
+gmx_sse grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -o temp.tpr
+echo 'SOL' | gmx_sse genion -s temp.tpr -p $TOPFILE_SOLV -conc 0.15 -nname CL -pname NA -neutral -o "$GROFILE_BN"_solvated.gro
 
 # generate an energy minimisation .tpr file 
 
 gmx_sse grompp -f $MDPFILE -c "$GROFILE_BN"_solvated.gro -p $TOPFILE_SOLV -o minim_"$GROFILE_BN"_solvated.tpr
 
 mv $TOPFILE_SOLV "$GROFILE_BN"_solvated.top
+
+# Clean Up
 rm $TOPFILE
+rm temp.tpr # this is only needed to add the ions.
 
 # You now have a .tpr file that is ready to be exectuted for energy minimisation.

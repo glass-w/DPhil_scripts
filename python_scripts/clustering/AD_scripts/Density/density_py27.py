@@ -28,7 +28,7 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 	- The script works by selecting all proteins in the system and sequentially going through them in each frame.
 	- First the protein is "put back in the box" and then centered in the system.
-	- Once centered, as transmembrane residue on the "outside" of the protein is selected (e.g. L440 for Nav1.5).
+	- Once centered, a transmembrane residue on the "outside" of the protein is selected (e.g. L440 for Nav1.5).
 	- All proteins are then rotated to match this orientation.
 	- A cut-off is then applied and the density of protein types stored.
 	- This result is then plotted.
@@ -68,23 +68,30 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 	proteins1_sele = {}
 	proteins2_sele = {}
-	end_prot1 = proteins1_nb*index_prot1
-	end_prot2 = proteins2_nb*index_prot2+end_prot1
+	end_prot1 = proteins1_nb * index_prot1
+	end_prot2 = proteins2_nb * (index_prot2 + end_prot1)
 
 	# access to the selection using MDAnalysis:
 	protein = U.select_atoms('protein')
 
 	# store index (as a string) of the different proteins of prot1
 	for p1_index in range(proteins1_nb):
-		proteins1_sele[p1_index] = protein.select_atoms('bynum ' + str(1 + p1_index*index_prot1) + ':' + str((1 + p1_index)*index_prot1))
+		proteins1_sele[p1_index] = protein.select_atoms('bynum ' + str(1 + p1_index*index_prot1) + ':' + str((1 + p1_index) * index_prot1))
 
-	print(str(len(proteins1_sele)) + ' Nav proteins found.')
+	# for p1_index in proteins1_sele:
+	# 	print(len(proteins1_sele[p1_index].select_atoms("name BB")))
 
-	# store index (as a string) of the different proteins ompF
+	print(str(len(proteins1_sele)) + ' 1st protein set found.')
+
+	# store index (as a string) of the different proteins
 	for p2_index in range(proteins2_nb):
-		proteins2_sele[p2_index] = protein.select_atoms('bynum ' + str(1 + p2_index*index_prot2 + end_prot1) + ':' + str((1 + p2_index)*index_prot2 + end_prot1))
+		proteins2_sele[p2_index] = protein.select_atoms('bynum ' + str(1 + p2_index * index_prot2 + end_prot1) + ':' + str((1 + p2_index) * index_prot2 + end_prot1))
 
-	print(str(len(proteins2_sele)) + ' Beta3 proteins found.')
+
+	for p2_index in proteins2_sele:
+		print(len(proteins2_sele[p2_index].select_atoms("name BB")))
+
+	print(str(len(proteins2_sele)) + ' 2nd protein set found.')
 
 #-----------------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
@@ -136,7 +143,7 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 	#lipid definition - this needs to be developed later (for mixed lipid studies perhaps?)
 
-	lipids_sele_def = "name PO4"
+	lipids_sele_def = "name PO4" # is this even needed in this script ?? W.G. Aug 18
 	lipids_sele = U.select_atoms(lipids_sele_def)
 
 	#browse frames
@@ -176,15 +183,21 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 
 			coords_prot2_removed_whole = np.zeros((proteins2_nb, nb_bb2, 3))
 
+			#print(proteins1_sele[0])
+
 			# make sure that all proteins are inside the box, i.e. move them so  that they are before centering them
 
 			for p1_index in range(proteins1_nb):
 
-				coords_prot1_removed_whole[p1_index, :] = coords_remove_whole(proteins1_sele[p1_index].BB.coordinates(), box_size)
+				#coords_prot1_removed_whole[p1_index, :] = coords_remove_whole(proteins1_sele[p1_index].BB.coordinates(), box_size)
+
+				coords_prot1_removed_whole[p1_index, :] = coords_remove_whole(proteins1_sele[p1_index].select_atoms('name BB').positions, box_size)
 
 			for p2_index in range(proteins2_nb):
 
-				coords_prot2_removed_whole[p2_index, :] = coords_remove_whole(proteins2_sele[p2_index].BB.coordinates(), box_size)
+				#coords_prot2_removed_whole[p2_index, :] = coords_remove_whole(proteins2_sele[p2_index].BB.coordinates(), box_size)
+
+				coords_prot2_removed_whole[p2_index, :] = coords_remove_whole(proteins2_sele[p2_index].select_atoms('name BB').positions, box_size)
 
 			for p1_index in range(proteins1_nb):
 
@@ -257,7 +270,9 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 				prot = proteins1_sele[p1_index]
 
 				#put coord of proteins back in the box
-				coord_dt = coords_remove_whole(prot.BB.coordinates(), box_size)
+
+				#coord_dt = coords_remove_whole(prot.BB.coordinates(), box_size)
+				coord_dt = coords_remove_whole(prot.BB.positions, box_size)
 
 				#calculate CoG
 				CoG_dt = calculate_cog(coord_dt, box_size)
@@ -773,8 +788,11 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 
 	if units == "nm":
 
-		matplotlib.pyplot.xlabel('X / nm', size=15)
-		matplotlib.pyplot.ylabel('Y / nm', size=15)
+		matplotlib.pyplot.xlabel(r'$x$' + ' (nm)', size=15)
+		matplotlib.pyplot.ylabel(r'$y$' + ' (nm)', size=15)
+
+		# matplotlib.pyplot.xlabel('X / nm', size=15)
+		# matplotlib.pyplot.ylabel('Y / nm', size=15)
 
 		import matplotlib.ticker as ticker
 

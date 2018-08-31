@@ -11,6 +11,12 @@ cp "$REQ_FILES_DIR"/water-box-CG-303K-1bar.gro .
 
 gmx_sse solvate -cp $GROFILE -cs water-box-CG-303K-1bar.gro -radius 0.21 -o "$GROFILE_BN"_solvated.gro
 
+# check if we have a membrane in our system (assuming AT POPC membrane), if so then remove waters inside membrane.
+in_mrbane_check=`grep "PO4" $GROFILE | wc -l`
+
+if [ $in_mrbane_check != 0 ]
+then
+
 rm water-box-CG-303K-1bar.gro
 echo ""
 echo "*** starting python script ***"
@@ -19,11 +25,11 @@ echo ""
 echo "*** python script complete ***"
 echo ""
 
+fi
 
+Wnum=`grep "W        W" "$GROFILE_BN"_solvated.gro | wc -l`
 
-Wnum=`grep "W " "$GROFILE_BN"_solvated.gro | wc -l`
-
-echo "W $Wnum" >> $TOPFILE 
+echo "W $Wnum" >> $TOPFILE
 
 cp $TOPFILE topol_solvated.top
 TOPFILE_SOLV="topol_solvated.top"

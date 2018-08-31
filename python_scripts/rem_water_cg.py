@@ -33,9 +33,13 @@ ll = sum(po4_ll) / float(len(po4_ll))
 
 w_above_ul = u.select_atoms("name W and prop z >= " + str(ul))
 
-w_below_ul = u.select_atoms("name W and prop z <= " + str(ll))
+print("Water above upper leaflet = ", w_above_ul)
 
-test = w_above_ul + w_below_ul
+w_below_ll = u.select_atoms("name W and prop z <= " + str(ll))
+
+print("Water below lower leaflet = ", w_below_ll)
+
+test = w_above_ul + w_below_ll
 
 
 new_gro_file = u.select_atoms("all and not (name W and (prop z < " + str(ul) + " and prop z > " + str(ll) + "))")

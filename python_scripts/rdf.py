@@ -122,9 +122,9 @@ def plot_multiple():
 
         colour += 1
 
-    ax.set_title(r"RDF of $\beta$3 subunit")
-    ax.set_xlabel("r (nm)")
-    ax.set_ylabel("g(r)")
+    ax.set_title(r"RDF of $\alpha$ - subunit", size=16)
+    ax.set_xlabel("r (nm)", size=16)
+    ax.set_ylabel("g(r)", size=16)
     ax.legend()
     ax.figure.savefig("RDF_Plot.svg", format='svg', dpi=300)
 

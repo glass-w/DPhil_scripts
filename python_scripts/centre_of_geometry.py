@@ -12,8 +12,8 @@ def area(a, b, c):
 
 
 def cog(gro_file, traj_file):
-    print gro_file[0]
-    print traj_file[0]
+    print "GRO File: ", gro_file[0]
+    print "XTC File: ", traj_file[0]
 
     u = mda.Universe(gro_file[0], traj_file[0])
 
@@ -22,19 +22,18 @@ def cog(gro_file, traj_file):
     # ig_b = u.select_atoms("resid 167:290")
     # ig_c = u.select_atoms("resid 333:457")
 
-    # ig_a = u.select_atoms("resid 1:123")
-    # ig_b = u.select_atoms("resid 124:246")
-    # ig_c = u.select_atoms("resid 247:369")
+    ig_a = u.select_atoms("resid 1:123")
+    ig_b = u.select_atoms("resid 124:246")
+    ig_c = u.select_atoms("resid 247:369")
 
-    ig_a = u.select_atoms("resid 13:123")
-    ig_b = u.select_atoms("resid 136:246")
-    ig_c = u.select_atoms("resid 259:369")
+#    ig_a = u.select_atoms("resid 13:123")
+ #   ig_b = u.select_atoms("resid 136:246")
+  #  ig_c = u.select_atoms("resid 259:369")
     #ig_c = u.select_atoms("resid 259:368")     # for the system where the terminal VAL is missing
 
     # print ig_a.resnames
     # print ig_b.resnames
     # print ig_c.resnames
-
 
     r1_store, r2_store, r3_store = [], [], []
 
@@ -254,9 +253,11 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
         u = mda.Universe(gro_list[0], traj_list[0])
         protein_length = len(u.select_atoms("protein and name CA"))
+        print u
+        print protein_length
+        #for frame in u.trajectory:
 
-        for frame in u.trajectory:
-            print u.trajectory[frame].time
+         #   print u.trajectory[frame].time
 
         print "One universe loaded..."
 
@@ -389,7 +390,7 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
                 print np.mean(regions_for_NC_analysis["A_BC"].timeseries[:, 1])
 
-                plt.plot(regions_for_NC_analysis["A_BC"].timeseries[:, 0],
+                plt.plot(np.linspace(0, 200, len(regions_for_NC_analysis["A_BC"].timeseries[:, 0])),
                          (100 * regions_for_NC_analysis["A_BC"].timeseries[:, 1]), alpha=0.5, label='Chain A', c=c_pal[k])
 
             elif key == "p1":
@@ -404,7 +405,7 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
                 print np.mean(regions_for_NC_analysis["B_AC"].timeseries[:, 1])
 
-                plt.plot(regions_for_NC_analysis["B_AC"].timeseries[:, 0],
+                plt.plot(np.linspace(0, 200, len(regions_for_NC_analysis["B_AC"].timeseries[:, 0])),
                          (100 * regions_for_NC_analysis["B_AC"].timeseries[:, 1]), alpha=0.5, label='Chain B', c=c_pal[k])
 
             elif key =="p2":
@@ -419,7 +420,9 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
                 print np.mean(regions_for_NC_analysis["C_AB"].timeseries[:, 1])
 
-                plt.plot(regions_for_NC_analysis["C_AB"].timeseries[:, 0],
+                print np.array(regions_for_NC_analysis["C_AB"].timeseries[:, 0])
+
+                plt.plot(np.linspace(0, 200, len(regions_for_NC_analysis["C_AB"].timeseries[:, 0])),
                          (100 * regions_for_NC_analysis["C_AB"].timeseries[:, 1]), alpha=0.5, label='Chain C', c=c_pal[k])
 
             else:
@@ -581,8 +584,6 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
                     regions_for_NC_analysis["s" + str(s)]["B_AC"].run()
 
-                    print np.mean(regions_for_NC_analysis["s" + str(s)]["B_AC"].timeseries[:, 1])
-
                     plt.plot(regions_for_NC_analysis["s" + str(s)]["B_AC"].timeseries[:, 0],
                              (100 * regions_for_NC_analysis["s" + str(s)]["B_AC"].timeseries[:, 1]), alpha=0.3, label='Chain B (system ' + str(s) + ')',
                              c=c_pal[k])
@@ -598,8 +599,6 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
 
                     regions_for_NC_analysis["s" + str(s)]["C_AB"].run()
 
-                    print np.mean(regions_for_NC_analysis["s" + str(s)]["C_AB"].timeseries[:, 1])
-
                     plt.plot(regions_for_NC_analysis["s" + str(s)]["C_AB"].timeseries[:, 0],
                              (100 * regions_for_NC_analysis["s" + str(s)]["C_AB"].timeseries[:, 1]), alpha=0.3, label='Chain C (system ' + str(s) + ')',
                              c=c_pal[k])
@@ -607,7 +606,7 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
                 else:
                     continue
 
-            time_data = np.arange(0, 2501, 1) # need to generalise this
+            time_data = np.linspace(0, 200, 2501) # need to generalise this
 
             avg = np.mean([regions_for_NC_analysis["s" + str(s)]["A_BC"].timeseries[:, 1],
                                   regions_for_NC_analysis["s" + str(s)]["B_AC"].timeseries[:, 1],
@@ -628,9 +627,9 @@ def native_contacts(gro_list, traj_list, num_proteins, N_resid):
             print avg[0]
             print power_smooth_avg[0]
 
-            plt.plot(xnew, power_smooth_avg, label='Avg (system ' + str(s) + ')', alpha=1, color='black')
+     #      plt.plot(xnew, power_smooth_avg, label='Avg (system ' + str(s) + ')', alpha=1, color='black')
 
-            #plt.plot(avg, color='black', alpha=1, label='Avg (system ' + str(s) + ')')
+           #plt.plot(avg, color='black', alpha=1, label='Avg (system ' + str(s) + ')')
 
         # need to add this method below for a more general calc of mean -- ???
         #print np.mean([regions_for_NC_analysis[k].timeseries[:, 1] for k, v in regions_for_NC_analysis["s" + str(s)].items()], axis=0)
@@ -662,7 +661,7 @@ if __name__ == "__main__":
 
     if options.native_c == True:
 
-        native_contacts(options.gro_file, options.xtc_file, num_proteins=3, N_resid=10)
+        native_contacts(options.gro_file, options.xtc_file, num_proteins=3, N_resid=123)
 
     elif options.plot_avg_flag == False:
 
