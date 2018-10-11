@@ -3678,7 +3678,7 @@ def graph_xvg_sizes_TM():
 	fontP.set_size("small")
 	ax1.legend(prop=fontP)
 	plt.title("%", fontsize="small")
-	plt.xlabel('Time / ns', fontsize="small")
+	plt.xlabel('Time (ns)', fontsize="small")
 	plt.ylabel('% of Proteins', fontsize="small")
 
 	#plot data: nb
@@ -3691,7 +3691,7 @@ def graph_xvg_sizes_TM():
 	fontP.set_size("small")
 	ax2.legend(prop=fontP)
 	plt.title("No.", fontsize="small")
-	plt.xlabel('Time / ns', fontsize="small")
+	plt.xlabel('Time (ns)', fontsize="small")
 	plt.ylabel('No. of Clusters', fontsize="small")
 
 	#save figure

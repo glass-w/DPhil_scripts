@@ -249,6 +249,16 @@ def main(coord, trajs, proteins1_nb, proteins2_nb, index_prot1, index_prot2, plo
 					# protein 1 vs. protein 2 (protein 1 in middle of image)
 					neighbours_prot[p1_index][frame_num] = rotate_coord(tmp_prot2_centered[(tmp_prot2_centered[:, :, 0]**2 < 30000) & (tmp_prot2_centered[:, :, 1]**2 < 30000)], rot)
 
+				elif plot == "p2p1":
+
+					# protein 2 vs. protein 1 (protein 2 in middle of image)
+					neighbours_prot[p2_index][frame_num] = rotate_coord(tmp_prot1_centered[(tmp_prot1_centered[:, :,0] ** 2 < 30000) & (tmp_prot1_centered[:, :,1] ** 2 < 30000)], rot)
+
+				elif plot == "p2p2":
+
+					# protein 2 vs. protein 2
+					neighbours_prot[p2_index][frame_num] = rotate_coord(tmp_prot2_centered[(tmp_prot2_centered[:, :,0] ** 2 < 30000) & (tmp_prot2_centered[:, :,1] ** 2 < 30000)], rot)
+
 				else:
 					print ("You need to select a plot type, p1p1 or p1p2")
 
@@ -788,8 +798,8 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 
 	if units == "nm":
 
-		matplotlib.pyplot.xlabel(r'$x$' + ' (nm)', size=15)
-		matplotlib.pyplot.ylabel(r'$y$' + ' (nm)', size=15)
+		matplotlib.pyplot.xlabel(r'$x$' + '-dimension (nm)', size=12)
+		matplotlib.pyplot.ylabel(r'$y$' + '-dimension (nm)', size=12)
 
 		# matplotlib.pyplot.xlabel('X / nm', size=15)
 		# matplotlib.pyplot.ylabel('Y / nm', size=15)
@@ -807,8 +817,13 @@ def plot_density_array(array,xedges,yedges, xmin, xmax, ymin, ymax, bin_num, ax,
 	array_avg = array/max_array
 	extent = [xedges[0], xedges[-1], yedges[0], yedges[-1] ]
 	# interesting interpolation: bicubic, lanczos see http://matplotlib.org/examples/images_contours_and_fields/interpolation_methods.html
+
 	cax = ax.imshow(array_avg.T, extent=extent, interpolation='bicubic', origin='lower', cmap=color)
-	matplotlib.pyplot.colorbar(cax)
+	cbar = matplotlib.pyplot.colorbar(cax)
+
+	cbar.set_label('Average Protein Density', size=12, labelpad=3)
+
+
 	#ax.plot(list_x,list_y,'o',markerfacecolor='#FC3147',markeredgecolor='#FC3147',markersize=0.8,alpha=0.8)
 
 

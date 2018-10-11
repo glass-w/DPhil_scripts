@@ -26,14 +26,14 @@ MDAnalysis 0.17.0.
 		3) There is a small discrepancy (detailed in the function) b/w MDAnalysis version 0.8.0 and 0.17.0 in what lipids
 		are considered to be "close", however when viewing the structure in VMD the beta values are essentially
 		indistinguishable - may be something to test...
-		4) The way in which distances are calcualted are now for EACH ATOM, i.e. not each residue (as I think this is
+		4) The way in which distances are calculated are now for EACH ATOM, i.e. not each residue (as I think this is
 		what u.segments did. The conclusion is that the distance calculation is a lot faster than before).
 
 
 	Show Frequencies On Structure Function:
-		1) Due to the way in which the distances are calculated and the way in which MDAnalusis 0.17.0 assigns b_factors
+		1) Due to the way in which the distances are calculated and the way in which MDAnalysis 0.17.0 assigns b_factors
 		it is no longer possible to assign b_factors to each residue, instead you must assign to atoms. To get around
-		this a three letter dictionary is referenced and the corresponding rows in the coordiantes assigned the same
+		this a three letter dictionary is referenced and the corresponding rows in the coordinates assigned the same
 		b_factor (called tempfactor in 0.17.0).
 
 *********************************************
@@ -372,7 +372,7 @@ def plot_frequencies_fancy(protein_residue_list, proteinres_lipid_interactions_d
 		cNorm = colors.Normalize(vmin=0,vmax=maxpercent)
 		scalar_map = cmx.ScalarMappable(norm = cNorm, cmap = lipid_cmap)
 		barcolor=scalar_map.to_rgba(percent_interactions_dict[lipid])
-		lipid_rects[lipid] = ax.barh(np.arange(len(percent_interactions_dict[lipid]))+width*i, percent_interactions_dict[lipid], width, align='center' , color=barcolor, ec=edge_colors[i])
+		lipid_rects[lipid] = ax.barh(np.arange(len(percent_interactions_dict[lipid]))+width*i, percent_interactions_dict[lipid], width, align='center', color=barcolor, ec=edge_colors[i])
 
 		i += 1
 

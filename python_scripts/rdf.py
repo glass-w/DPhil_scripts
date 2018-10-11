@@ -1,6 +1,7 @@
 import MDAnalysis as mda
 from MDAnalysis.analysis.rdf import InterRDF
 import matplotlib
+matplotlib.use('agg') # for use when in ssh session
 import matplotlib.pyplot as plt
 from scipy.interpolate import spline
 import numpy as np
@@ -86,8 +87,10 @@ def plot_multiple():
 
     #cb_friendly_cp = ['#40004b','#9970ab','#c2a5cf','#a6dba0','#5aae61','#1b7837','#00441b']
 
-    cb_friendly_cp = ['#bfd3e6', '#9ebcda', '#8c96c6', '#8c6bb1', '#88419d', '#810f7c', '#4d004b']
-    cpal = cb_friendly_cp[::-1]
+    #cb_friendly_cp = ['#bfd3e6', '#9ebcda', '#8c96c6', '#8c6bb1', '#88419d', '#810f7c', '#4d004b']
+    #cpal = cb_friendly_cp[::-1]
+
+    cpal = [[0.596078, 0.30588, 0.635294], "y", [1, 0.4980, 0], [0.6, 0.8, 1], [0.30196, 0.68627, 0.290196], [0.8, 0.8, 0.8], [0.85, 0.60, 0.90]]
     #print cpal
 
     colour = 0
@@ -116,13 +119,13 @@ def plot_multiple():
         ax = plt.subplot(111)
 
         ax.plot(x, y, lw=1.5, alpha=.75, label=lipid_group_dict[df], c=cpal[colour])
-        plt.axhline(y=1, xmin=0.0, xmax=8.0, linestyle='dashed', color='black', alpha=0.25, lw=0.5)
+        plt.axhline(y=1, xmin=0.0, xmax=8.0, linestyle='dashed', color='black', alpha=0.75, lw=1.0)
 
         plt.draw()
 
         colour += 1
 
-    ax.set_title(r"RDF of $\alpha$ - subunit", size=16)
+    #ax.set_title(r"RDF of $\alpha$ - subunit", size=16)
     ax.set_xlabel("r (nm)", size=16)
     ax.set_ylabel("g(r)", size=16)
     ax.legend()

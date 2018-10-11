@@ -27,7 +27,7 @@ ndx_count=`ls -1 *.ndx 2>/dev/null | wc -l`
 if [ $ndx_count = 0 ]
 then
 
-gmx_sse make_ndx -f $GROFILE -o index.ndx
+gmx make_ndx -f $GROFILE -o index.ndx
 
 NDXFILE=`ls *.ndx`
 
@@ -39,11 +39,11 @@ then
 
 CPTFILE=`ls *.cpt`
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME".tpr -maxwarn 2
+gmx grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -t $CPTFILE -o "$TPRFILE_NAME".tpr -maxwarn 2 -r $GROFILE
 
 elif [ $cpt_count = 0 ]
 then
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME".tpr -maxwarn 2
+gmx grompp -f $MDPFILE -p $TOPFILE -c $GROFILE -n index.ndx -o "$TPRFILE_NAME".tpr -maxwarn 2 -r $GROFILE
 
 fi

@@ -7,7 +7,7 @@
 
  '''
 
-box_increase=4
+box_increase=7
 
 #count atoms
 
@@ -29,7 +29,7 @@ z=$(echo $old_z + $box_increase | bc)
 #apply new dimensions to protein and lipid files individually
 
 #echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 -15 0 -box $x $y $z
-echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 0 0 -box $x $y $z
+echo 'protein' | gmx_sse editconf -f $1 -o newbox.gro -c -rotate 0 -15 -15 -box $x $y $z
 gmx_sse editconf -f newbox.gro -translate 0 0 0 -o translated_newbox.gro
 
 gmx_sse editconf -f $2 -o $2 -c -box $x $y $z

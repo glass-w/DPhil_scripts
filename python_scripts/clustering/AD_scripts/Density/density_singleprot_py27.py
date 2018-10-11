@@ -55,6 +55,7 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	print('Proteins found.')
 
 
+
 #------------------------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------------------
 #
@@ -270,6 +271,8 @@ def main(coord, trajs, proteins_nb, index_prot, bb_prot, res_prot, start_frame, 
 	fig_vector_prot = matplotlib.pyplot.figure()
 	ax_vector_prot = fig_vector_prot.add_subplot(111)
 	ax_vector_prot.set_title(plot_title)
+
+	print(prot_list[5][0])
 
 	plot_prot(prot_list[5][0], -cutoff, cutoff, -cutoff, cutoff, ax_vector_prot)
 	plot_vector(vector_list[5][0], -cutoff, cutoff, -cutoff, cutoff, 'black', ax_vector_prot)
@@ -547,43 +550,43 @@ def plot_prot(coord, xmin, xmax, ymin, ymax, ax):
 
 	#### PLOTTING THE NAV CHANNEL ####
 
-	regions_of_interest = [coord[89: 193], coord[395:509], coord[649: 759], coord[949: 1074]]
-	col = ['#ffffcc', '#a1dab4', '#41b6c4', '#225ea8']
-
-	# Specifiy the non-VSD domains
-
-	not_vsd = coord
-
-	not_vsd_elements = list(range(89, 193)) + list(range(395, 509)) + list(range(629, 759)) + list(range(949, 1074))
-
-	# filter out the VSD's, need to reverse order so that subsequent indexes do not drop off
-
-	for index in sorted(not_vsd_elements, reverse=True):
-		del not_vsd[index]
-
-	# ax.plot(map(lambda x: x[0], coord), map(lambda x: x[1], coord),'o', markerfacecolor='#B29007', markeredgecolor='#000000', markersize=10, alpha=0.8)
-
-	ax.plot(map(lambda x: x[0], not_vsd), map(lambda x: x[1], not_vsd), '.', markerfacecolor='snow',
-			markersize=10, markeredgecolor='#000000', alpha=0.6)
-
-	for i in range(4):
-		j = i + 1
-
-		ax.plot(map(lambda x: x[0], regions_of_interest[i]), map(lambda x: x[1], regions_of_interest[i]), '.',
-				markerfacecolor=col[i],
-				markeredgecolor='#000000', markersize=10, alpha=0.8, label='VSD D' + str(j))
-
-	ax.legend()
+	# regions_of_interest = [coord[89: 193], coord[395:509], coord[649: 759], coord[949: 1074]]
+	# col = ['#ffffcc', '#a1dab4', '#41b6c4', '#225ea8']
+    #
+	# # Specifiy the non-VSD domains
+    #
+	# not_vsd = coord
+    #
+	# not_vsd_elements = list(range(89, 193)) + list(range(395, 509)) + list(range(629, 759)) + list(range(949, 1074))
+    #
+	# # filter out the VSD's, need to reverse order so that subsequent indexes do not drop off
+    #
+	# for index in sorted(not_vsd_elements, reverse=True):
+	# 	del not_vsd[index]
+    #
+	# # ax.plot(map(lambda x: x[0], coord), map(lambda x: x[1], coord),'o', markerfacecolor='#B29007', markeredgecolor='#000000', markersize=10, alpha=0.8)
+    #
+	# ax.plot(map(lambda x: x[0], not_vsd), map(lambda x: x[1], not_vsd), '.', markerfacecolor='snow',
+	# 		markersize=10, markeredgecolor='#000000', alpha=0.6)
+    #
+	# for i in range(4):
+	# 	j = i + 1
+    #
+	# 	ax.plot(map(lambda x: x[0], regions_of_interest[i]), map(lambda x: x[1], regions_of_interest[i]), '.',
+	# 			markerfacecolor=col[i],
+	# 			markeredgecolor='#000000', markersize=10, alpha=0.8, label='VSD D' + str(j))
+    #
+	# ax.legend()
 
 
 	#### PLOTTING BETA3 SUBUNIT ####
 
-	# ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'.',markerfacecolor='snow', markeredgecolor='#000000',
-	# 		markersize=10,alpha=0.6, label='Beta3 EC Domain')
-    #
-	# ax.legend()
+	ax.plot(map(lambda x: x[0], coord),map(lambda x: x[1], coord),'.',markerfacecolor='snow', markeredgecolor='#000000',
+			markersize=10,alpha=0.6, label='Beta3 EC Domain')
 
-	#print("coordinates plotted")
+	ax.legend()
+
+	print("coordinates plotted")
 
 def plot_vector(vector, xmin, xmax, ymin, ymax, color_arrow, ax):
 

@@ -118,22 +118,46 @@ def rmsd_calc_chains(coord_file, traj_file, selection_phrase, no_chains):
 def plot_chains(data_dict, plot_name):
 
     '''A function to plot calculated RMSD data for multiple chains
-    and save the image according to the .gro file input'''
+    and save the image according to the .gro file input.
 
-    fig, ax = plt.subplots(len(data_dict), sharex=True, sharey=True)
+    If more than one chain is detected the plot will show an RMSD
+    for each chain in the system.
+    '''
 
-    col = ['#a6cee3','#1f78b4','#b2df8a']
+    num_of_chains = len(data_dict)
 
-    for i, chain in enumerate(data_dict):
+    if num_of_chains > 1:
 
-        df = np.array(data_dict[chain])
+        fig, ax = plt.subplots(len(data_dict), sharex=True, sharey=True)
 
-        ax[i].plot((df[:, 0]/1000), (df[:, 1]),c=col[i],
-        lw=1.5, label=str(chain), alpha=0.7)
-        ax[i].legend()
+        col = ['#a6cee3','#1f78b4','#b2df8a']
 
-    fig.text(0.5, 0.04, 'Time (ns)', ha='center')
-    fig.text(0.04, 0.5, "RMSD (" + r'$\AA$' + ')', va='center', rotation='vertical')
+        for i, chain in enumerate(data_dict):
+
+            df = np.array(data_dict[chain])
+
+            ax[i].plot((df[:, 0]/1000), (df[:, 1]), c=col[i], lw=1.5, label=str(chain), alpha=0.7)
+            ax[i].legend()
+            ax[i].set_ylim(ymax=10)
+
+        fig.text(0.5, 0.04, 'Time (ns)', ha='center')
+        fig.text(0.04, 0.5, "RMSD (" + r'$\AA$' + ')', va='center', rotation='vertical')
+
+    # If only one chain in the system.
+    else:
+
+        fig, ax = plt.subplots()
+
+        col = ['#a6cee3', '#1f78b4', '#b2df8a']
+
+        df = np.array(data_dict['Chain A'])
+
+        ax.plot((df[:, 0] / 1000), (df[:, 1]), c=col[0], lw=1.5, alpha=0.7)
+        #ax.set_ylim(ymax=16)
+
+        fig.text(0.5, 0.04, 'Time (ns)', ha='center')
+        fig.text(0.04, 0.5, "RMSD (" + r'$\AA$' + ')', va='center', rotation='vertical')
+
 
     plt.savefig(plot_name.split(".g")[0] + "_RMSD.svg", format='svg')
     plt.show()

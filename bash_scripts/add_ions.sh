@@ -30,7 +30,9 @@ PY_WATER_REM_PATH=~/SCRIPTS/python_scripts
 
 # solvate system with water, don't read in topology file. Will add new waters after water removal script.
 
-gmx_sse solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro # -p $TOPFILE
+#gmx_sse solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro # -p $TOPFILE
+gmx solvate -cp $GROFILE -o "$GROFILE_BN"_solvated.gro
+
 
 # check if we have a membrane in our system (assuming AT POPC membrane), if so then remove waters inside membrane.
 in_mrbane_check=`grep "POPC" $GROFILE | wc -l`
@@ -60,12 +62,18 @@ TOPFILE_SOLV="topol_solvated.top"
 
 # add ions 
 
-gmx_sse grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -o temp.tpr
-echo 'SOL' | gmx_sse genion -s temp.tpr -p $TOPFILE_SOLV -conc 0.15 -nname CL -pname NA -neutral -o "$GROFILE_BN"_solvated.gro
+#gmx_sse grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -o temp.tpr
+#echo 'SOL' | gmx_sse genion -s temp.tpr -p $TOPFILE_SOLV -conc 0.15 -nname CL -pname NA -neutral -o "$GROFILE_BN"_solvated.gro
+
+gmx grompp -f $MDPFILE -p $TOPFILE_SOLV -c "$GROFILE_BN"_solvated.gro -r "$GROFILE_BN"_solvated.gro -o temp.tpr -maxwarn 2
+echo 'SOL' | gmx genion -s temp.tpr -p $TOPFILE_SOLV -conc 0.15 -nname CL -pname NA -neutral -o "$GROFILE_BN"_solvated.gro
+
 
 # generate an energy minimisation .tpr file 
 
-gmx_sse grompp -f $MDPFILE -c "$GROFILE_BN"_solvated.gro -p $TOPFILE_SOLV -o minim_"$GROFILE_BN"_solvated.tpr
+#gmx_sse grompp -f $MDPFILE -c "$GROFILE_BN"_solvated.gro -p $TOPFILE_SOLV -o minim_"$GROFILE_BN"_solvated.tpr
+
+gmx grompp -f $MDPFILE -c "$GROFILE_BN"_solvated.gro -p $TOPFILE_SOLV -r "$GROFILE_BN"_solvated.gro -o minim_"$GROFILE_BN"_solvated.tpr -maxwarn 2
 
 mv $TOPFILE_SOLV "$GROFILE_BN"_solvated.top
 
